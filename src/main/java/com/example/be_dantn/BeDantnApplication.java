@@ -8,6 +8,8 @@ public class BeDantnApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(BeDantnApplication.class, args);
+
+        System.out.printf("chay thanh cong!");
     }
 
 }
