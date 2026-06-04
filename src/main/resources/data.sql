@@ -3,7 +3,7 @@
 INSERT INTO chat_lieu (ma_chat_lieu, ten_chat_lieu, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
 ('CL001', 'Cotton', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
 ('CL002', 'Polyester', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
-('CL003', 'Len', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
+('CL003', 'Rayon', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
 ('CL004', 'Lụa', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
 ('CL005', 'Kaki', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
 
@@ -78,3 +78,22 @@ INSERT INTO xuat_su (ma_xuat_su, ten_xuat_su, trang_thai, ngay_tao, ngay_sua, ng
 ('XS003', 'Thái Lan', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
 ('XS004', 'Hàn Quốc', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
 ('XS005', 'Nhật Bản', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
+
+-- Seed data for san_pham
+INSERT INTO san_pham (ma_san_pham, ten_san_pham, mo_ta, hinh_anh, trang_thai, id_thuong_hieu, id_chat_lieu, id_xuat_su, id_kieu_dang, id_loai_san_pham, id_co_ao, id_tay_ao, id_vai_ao, ngay_tao, ngay_sua) VALUES
+('SP001', 'Áo Polo Nike', 'Áo polo thể thao, thoáng mát', '/uploads/243c8d88-ce3a-4d07-ac23-153e3c1db4dd.png', 1, 1, 1, 1, 2, 1, 2, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('SP002', 'Áo Thun Adidas', 'Áo thun 3 sọc huyền thoại', '/uploads/29aec001-d056-42f2-b7d1-5ec7e64e1ec1.png', 1, 2, 1, 2, 2, 1, 1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Seed data for chi_tiet_san_pham
+-- Product 1: Áo Polo Nike
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua) VALUES
+('CTSP001', 1, 1, 2, 50, 200000, 350000, '/uploads/d4fd4a55-abcb-4441-81b1-c4159cd5c6e9.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('CTSP002', 1, 1, 3, 30, 200000, 350000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('CTSP003', 1, 2, 2, 60, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('CTSP004', 1, 2, 3, 40, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Product 2: Áo Thun Adidas
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua) VALUES
+('CTSP005', 2, 4, 1, 100, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
