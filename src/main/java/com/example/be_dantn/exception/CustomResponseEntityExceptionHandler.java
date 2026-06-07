@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.time.LocalDateTime;
 import java.util.stream.Collectors;
 
@@ -48,24 +49,39 @@ public  final ResponseEntity<CustomErrorDetails>      handleAllException(Excepti
     }
 
 
- @Override
-    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                               HttpHeaders headers,
-                                                               HttpStatusCode status,
-                                                               WebRequest request) {
+    @Override
+    public ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
 
-        String messages = ex.getFieldErrors().stream()
-                .map(e -> e.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+        Map<String, String> errors = new HashMap<>();
 
-        CustomErrorDetails errorDetails =
-                new CustomErrorDetails(LocalDateTime.now(), messages, request.getDescription(false));
+        ex.getBindingResult()
+                .getFieldErrors()
+                .forEach(error -> {
+                    errors.put(
+                            error.getField(),
+                            error.getDefaultMessage()
+                    );
+                });
 
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST); // 400
-
-
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
 
+    @ExceptionHandler(DuplicateDataException.class)
+    public ResponseEntity<?> handleDuplicate(
+            DuplicateDataException ex
+    ) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        response.put("success", false);
+        response.put("message", ex.getMessage());
+
+        return ResponseEntity.badRequest().body(response);
+    }
 
 }
