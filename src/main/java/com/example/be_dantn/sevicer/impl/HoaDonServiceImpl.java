@@ -7,6 +7,7 @@ import com.example.be_dantn.entity.HoaDon;
 import com.example.be_dantn.exception.CustomResourceotFoundException;
 import com.example.be_dantn.repositoty.HoaDonRepository;
 import com.example.be_dantn.sevicer.HoaDonService;
+import com.example.be_dantn.sevicer.LichSuHoaDonService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -33,6 +34,7 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     private final HoaDonRepository hoaDonRepository;
     private final ModelMapper modelMapper;
+    private final LichSuHoaDonService lichSuHoaDonService;
 
     private HoaDonResponse toResponse(HoaDon hoaDon) {
         return modelMapper.map(hoaDon, HoaDonResponse.class);
@@ -109,7 +111,16 @@ public class HoaDonServiceImpl implements HoaDonService {
         hoaDon.setTongTienThanhToan(tongTienThanhToan);
         hoaDon.setNgayTao(LocalDateTime.now());
 
-        return toResponse(hoaDonRepository.save(hoaDon));
+        HoaDon saved = hoaDonRepository.save(hoaDon);
+
+        lichSuHoaDonService.luuLichSu(
+                saved.getId(),
+                saved.getTrangThai(),
+                "TẠO HÓA ĐƠN",
+                "Tạo mới hóa đơn " + saved.getMaHoaDon()
+        );
+
+        return toResponse(saved);
     }
 
     @Override
@@ -205,27 +216,42 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     @Override
     public HoaDonResponse capNhatTrangThai(Long id, CapNhatTrangThaiHoaDonRequest request) {
-        return hoaDonRepository.findById(id)
-                .map(hoaDon -> {
-                    hoaDon.setTrangThai(request.getTrangThai());
+        HoaDon hoaDon = hoaDonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Hóa đơn không tồn tại"));
 
-                    if (request.getGhiChu() != null) {
-                        hoaDon.setGhiChu(request.getGhiChu());
-                    }
+        String trangThaiCu = hoaDon.getTrangThai();
+        String trangThaiMoi = request.getTrangThai();
 
-                    if ("HOAN_THANH".equals(request.getTrangThai())) {
-                        hoaDon.setNgayThanhToan(LocalDateTime.now());
-                    }
+        if (trangThaiMoi == null || trangThaiMoi.isBlank()) {
+            throw new IllegalArgumentException("Trạng thái mới không được để trống");
+        }
 
-                    if ("DA_NHAN_HANG".equals(request.getTrangThai())) {
-                        hoaDon.setNgayNhanHang(LocalDateTime.now());
-                    }
+        hoaDon.setTrangThai(trangThaiMoi);
+        hoaDon.setNgaySua(LocalDateTime.now());
 
-                    hoaDon.setNgaySua(LocalDateTime.now());
+        if (request.getGhiChu() != null) {
+            hoaDon.setGhiChu(request.getGhiChu());
+        }
 
-                    return toResponse(hoaDonRepository.save(hoaDon));
-                })
-                .orElseThrow(() -> new CustomResourceotFoundException("Hoa don voi id " + id + " khong ton tai"));
+        if ("HOAN_THANH".equals(trangThaiMoi)) {
+            hoaDon.setNgayThanhToan(LocalDateTime.now());
+        }
+
+        HoaDon saved = hoaDonRepository.save(hoaDon);
+
+        lichSuHoaDonService.luuLichSu(
+                saved.getId(),
+                trangThaiMoi,
+                "CẬP NHẬT TRẠNG THÁI",
+                "Chuyển trạng thái từ "
+                        + getTrangThaiText(trangThaiCu)
+                        + " sang "
+                        + getTrangThaiText(trangThaiMoi)
+                        + ". "
+                        + safeString(request.getGhiChu())
+        );
+
+        return toResponse(saved);
     }
 
     @Override
@@ -387,14 +413,46 @@ public class HoaDonServiceImpl implements HoaDonService {
             throw new IllegalArgumentException("Hoa don da bi huy truoc do");
         }
 
+        String trangThaiCu = hoaDon.getTrangThai();
+        String ghiChu = request != null ? request.getGhiChu() : null;
+
         hoaDon.setTrangThai("DA_HUY");
-
-        if (request != null && request.getGhiChu() != null) {
-            hoaDon.setGhiChu(request.getGhiChu());
-        }
-
         hoaDon.setNgaySua(LocalDateTime.now());
 
-        return toResponse(hoaDonRepository.save(hoaDon));
+        if (ghiChu != null) {
+            hoaDon.setGhiChu(ghiChu);
+        }
+
+        HoaDon saved = hoaDonRepository.save(hoaDon);
+
+        lichSuHoaDonService.luuLichSu(
+                saved.getId(),
+                "DA_HUY",
+                "HỦY HÓA ĐƠN",
+                "Chuyển trạng thái từ "
+                        + getTrangThaiText(trangThaiCu)
+                        + " sang Đã hủy. "
+                        + safeString(ghiChu)
+        );
+
+        return toResponse(saved);
+    }
+    private String safeString(String value) {
+        return value == null ? "" : value;
+    }
+
+    private String getTrangThaiText(String trangThai) {
+        if (trangThai == null) {
+            return "Không xác định";
+        }
+
+        return switch (trangThai) {
+            case "CHO_XAC_NHAN" -> "Chờ xác nhận";
+            case "DANG_XU_LY" -> "Đang xử lý";
+            case "DANG_GIAO" -> "Đang giao";
+            case "HOAN_THANH" -> "Hoàn thành";
+            case "DA_HUY" -> "Đã hủy";
+            default -> "Không xác định";
+        };
     }
 }
