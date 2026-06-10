@@ -6,6 +6,7 @@ import com.example.be_dantn.sevicer.EmailService;
 import com.example.be_dantn.sevicer.NhanvienService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -63,4 +64,12 @@ public class NhanVienController {
 
         return "OK";
     }
+
+    @GetMapping("/export-excel")
+    public ResponseEntity<InputStreamResource> exportExcel() {
+
+        return nhanvienService.exportExcel();
+    }
+
+
 }

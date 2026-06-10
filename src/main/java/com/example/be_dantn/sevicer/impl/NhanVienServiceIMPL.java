@@ -17,6 +17,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import java.io.ByteArrayInputStream;
+import com.example.be_dantn.sevicer.ExcelService;
+
+
 @Service
 @RequiredArgsConstructor
 public class NhanVienServiceIMPL implements NhanvienService {
@@ -214,4 +222,35 @@ public class NhanVienServiceIMPL implements NhanvienService {
                 NhanVienRespon.class
         );
     }
+
+
+    @Override
+    public ResponseEntity<InputStreamResource> exportExcel() {
+
+        List<NhanVienRespon> danhSachNhanVien =
+                findAll();
+
+        ByteArrayInputStream excelFile =
+                ExcelService.exportExcel(
+                        danhSachNhanVien
+                );
+
+        HttpHeaders headers =
+                new HttpHeaders();
+
+        headers.add(
+                "Content-Disposition",
+                "attachment; filename=danh_sach_nhan_vien.xlsx"
+        );
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentType(
+                        MediaType.APPLICATION_OCTET_STREAM
+                )
+                .body(
+                        new InputStreamResource(excelFile)
+                );
+    }
+
 }
