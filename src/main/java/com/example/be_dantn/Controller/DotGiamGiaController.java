@@ -1,8 +1,10 @@
 package com.example.be_dantn.Controller;
 
 import com.example.be_dantn.Dto.Request.DotGiamGiaCreateRequest;
+import com.example.be_dantn.Dto.Request.DotGiamGiaUpdateRequest;
 import com.example.be_dantn.Dto.Response.DotGiamGiaResponseDTO;
 import com.example.be_dantn.Dto.Response.ResponseObject;
+import com.example.be_dantn.Exception.ResourceNotFoundException;
 import com.example.be_dantn.sevicer.DotGiamGiaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,6 +57,40 @@ public class DotGiamGiaController {
             dotGiamGiaService.createDotGiamGia(request);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(new ResponseObject<>(HttpStatus.CREATED, "Tạo đợt giảm giá thành công", null));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ResponseObject<>(HttpStatus.BAD_REQUEST, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject<>(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra: " + e.getMessage(), null));
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ResponseObject<DotGiamGiaResponseDTO>> getDotGiamGiaById(@PathVariable Long id) {
+        try {
+            DotGiamGiaResponseDTO response = dotGiamGiaService.getDotGiamGiaById(id);
+            return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Lấy thông tin đợt giảm giá thành công", response));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND, e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ResponseObject<>(HttpStatus.INTERNAL_SERVER_ERROR, "Có lỗi xảy ra: " + e.getMessage(), null));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ResponseObject<Void>> updateDotGiamGia(
+            @PathVariable Long id,
+            @Valid @RequestBody DotGiamGiaUpdateRequest request
+    ) {
+        try {
+            dotGiamGiaService.updateDotGiamGia(id, request);
+            return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Cập nhật đợt giảm giá thành công", null));
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ResponseObject<>(HttpStatus.NOT_FOUND, e.getMessage(), null));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ResponseObject<>(HttpStatus.BAD_REQUEST, e.getMessage(), null));

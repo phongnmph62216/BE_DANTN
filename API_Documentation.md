@@ -36,6 +36,10 @@ This document outlines the RESTful API endpoints for managing products, product 
         *   `page`, `size`.
     *   **Response Data:** `Page<DotGiamGiaResponseDTO>`
 
+*   **GET /api/v1/dot-giam-gia/{id}**
+    *   **Description:** Lấy thông tin chi tiết một đợt giảm giá để hiển thị lên Form cập nhật. Đặc biệt trả về thêm danh sách các biến thể sản phẩm đang được áp dụng.
+    *   **Response Data:** `DotGiamGiaResponseDTO` (Bao gồm trường `danhSachIdChiTietSanPham`).
+
 *   **POST /api/v1/dot-giam-gia**
     *   **Description:** Tạo mới một đợt giảm giá và áp dụng nó cho danh sách các biến thể sản phẩm.
     *   **Request Body:** `DotGiamGiaCreateRequest`
@@ -48,6 +52,10 @@ This document outlines the RESTful API endpoints for managing products, product 
           "danhSachIdChiTietSanPham": [1, 2, 5] // Mảng ID của các biến thể cần áp dụng
         }
         ```
+
+*   **PUT /api/v1/dot-giam-gia/{id}**
+    *   **Description:** Cập nhật thông tin đợt giảm giá và danh sách các biến thể sản phẩm áp dụng đợt giảm giá này.
+    *   **Request Body:** `DotGiamGiaUpdateRequest` (Cấu trúc tương tự CreateRequest).
 
 *   **PATCH /api/v1/dot-giam-gia/{id}/status**
     *   **Description:** Đảo ngược trạng thái của một đợt giảm giá.

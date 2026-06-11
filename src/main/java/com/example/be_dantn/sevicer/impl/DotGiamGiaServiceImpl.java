@@ -1,9 +1,11 @@
 package com.example.be_dantn.sevicer.impl;
 
 import com.example.be_dantn.Dto.Request.DotGiamGiaCreateRequest;
+import com.example.be_dantn.Dto.Request.DotGiamGiaUpdateRequest;
 import com.example.be_dantn.Dto.Response.DotGiamGiaResponseDTO;
 import com.example.be_dantn.Entity.ChiTietSanPham;
 import com.example.be_dantn.Entity.DotGiamGia;
+import com.example.be_dantn.Exception.ResourceNotFoundException;
 import com.example.be_dantn.Repository.ChiTietSanPhamRepository;
 import com.example.be_dantn.Repository.DotGiamGiaRepository;
 import com.example.be_dantn.sevicer.DotGiamGiaService;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,6 +68,69 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
                 variant.setDotGiamGia(savedDotGiamGia); // Set khóa ngoại
             }
             
+            chiTietSanPhamRepository.saveAll(variantsToUpdate);
+        }
+
+        return savedDotGiamGia;
+    }
+
+    @Override
+    public DotGiamGiaResponseDTO getDotGiamGiaById(Long id) {
+        DotGiamGia dotGiamGia = dotGiamGiaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đợt giảm giá với id: " + id));
+
+        List<Long> danhSachIdChiTietSanPham = chiTietSanPhamRepository.findByDotGiamGia_Id(id)
+                .stream()
+                .map(ChiTietSanPham::getId)
+                .collect(Collectors.toList());
+
+        DotGiamGiaResponseDTO responseDTO = new DotGiamGiaResponseDTO();
+        responseDTO.setId(dotGiamGia.getId());
+        responseDTO.setMaDotGiamGia(dotGiamGia.getMaDotGiamGia());
+        responseDTO.setTenDotGiamGia(dotGiamGia.getTenDotGiamGia());
+        responseDTO.setPhanTramGiam(dotGiamGia.getPhanTramGiam());
+        responseDTO.setNgayBatDau(dotGiamGia.getNgayBatDau());
+        responseDTO.setNgayKetThuc(dotGiamGia.getNgayKetThuc());
+        responseDTO.setTrangThai(dotGiamGia.getTrangThai());
+        responseDTO.setDanhSachIdChiTietSanPham(danhSachIdChiTietSanPham);
+
+        return responseDTO;
+    }
+
+    @Override
+    @Transactional
+    public DotGiamGia updateDotGiamGia(Long id, DotGiamGiaUpdateRequest request) {
+        // Bước 1: Validate dữ liệu
+        if (request.getNgayKetThuc().isBefore(request.getNgayBatDau())) {
+            throw new IllegalArgumentException("Ngày kết thúc phải sau ngày bắt đầu.");
+        }
+
+        DotGiamGia dotGiamGia = dotGiamGiaRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đợt giảm giá với id: " + id));
+
+        // Cập nhật thông tin cơ bản
+        dotGiamGia.setTenDotGiamGia(request.getTenDotGiamGia());
+        dotGiamGia.setPhanTramGiam(request.getPhanTramGiam());
+        dotGiamGia.setNgayBatDau(request.getNgayBatDau());
+        dotGiamGia.setNgayKetThuc(request.getNgayKetThuc());
+        dotGiamGia.setTrangThai(request.getTrangThai());
+
+        DotGiamGia savedDotGiamGia = dotGiamGiaRepository.save(dotGiamGia);
+
+        // Bước 1 (Gỡ bỏ): Tìm TẤT CẢ các chi_tiet_san_pham hiện đang có id_dot_giam_gia = ID này
+        List<ChiTietSanPham> currentVariants = chiTietSanPhamRepository.findByDotGiamGia_Id(id);
+        for (ChiTietSanPham variant : currentVariants) {
+            variant.setDotGiamGia(null);
+        }
+        chiTietSanPhamRepository.saveAll(currentVariants);
+
+        // Bước 2 (Áp dụng mới): Lấy danh sách biến thể theo danhSachIdChiTietSanPham request gửi lên
+        List<Long> newVariantIds = request.getDanhSachIdChiTietSanPham();
+        if (newVariantIds != null && !newVariantIds.isEmpty()) {
+            List<ChiTietSanPham> variantsToUpdate = chiTietSanPhamRepository.findAllByIdIn(newVariantIds);
+            for (ChiTietSanPham variant : variantsToUpdate) {
+                variant.setDotGiamGia(savedDotGiamGia);
+            }
             chiTietSanPhamRepository.saveAll(variantsToUpdate);
         }
 

@@ -97,4 +97,8 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
     );
 
     Optional<ChiTietSanPham> findByMaChiTietSanPham(String maChiTietSanPham);
+
+    // New methods for discount campaign
+    List<ChiTietSanPham> findByDotGiamGia_Id(Long idDotGiamGia);
+    List<ChiTietSanPham> findAllByIdIn(List<Long> ids);
 }
