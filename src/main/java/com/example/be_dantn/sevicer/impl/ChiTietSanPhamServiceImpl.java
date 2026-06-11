@@ -131,7 +131,11 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
                 entity.getSoLuongTon(),
                 entity.getGiaNhap(),
                 entity.getGiaBan(),
-                entity.getTrangThai()
+                entity.getTrangThai(),
+                entity.getDotGiamGia() != null ? entity.getDotGiamGia().getPhanTramGiam() : null,
+                entity.getDotGiamGia() != null ? entity.getDotGiamGia().getNgayBatDau() : null,
+                entity.getDotGiamGia() != null ? entity.getDotGiamGia().getNgayKetThuc() : null,
+                entity.getDotGiamGia() != null ? entity.getDotGiamGia().getTrangThai() : null
         );
     }
 }

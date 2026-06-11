@@ -18,8 +18,11 @@ public class SanPhamResponse {
     private Long tongTonKho;
     private BigDecimal giaThapNhat;
     private BigDecimal giaCaoNhat;
+    private Integer maxPhanTramGiam;
+    private BigDecimal giaThapNhatSauGiam;
+    private BigDecimal giaCaoNhatSauGiam;
 
-    public SanPhamResponse(Long id, String maSanPham, String tenSanPham, String hinhAnh, Integer trangThai, String tenThuongHieu, String tenChatLieu, Long tongTonKho, BigDecimal giaThapNhat, BigDecimal giaCaoNhat) {
+    public SanPhamResponse(Long id, String maSanPham, String tenSanPham, String hinhAnh, Integer trangThai, String tenThuongHieu, String tenChatLieu, Long tongTonKho, BigDecimal giaThapNhat, BigDecimal giaCaoNhat, Integer maxPhanTramGiam, BigDecimal giaThapNhatSauGiam, BigDecimal giaCaoNhatSauGiam) {
         this.id = id;
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
@@ -30,5 +33,8 @@ public class SanPhamResponse {
         this.tongTonKho = tongTonKho != null ? tongTonKho : 0L;
         this.giaThapNhat = giaThapNhat;
         this.giaCaoNhat = giaCaoNhat;
+        this.maxPhanTramGiam = maxPhanTramGiam != null ? maxPhanTramGiam : 0;
+        this.giaThapNhatSauGiam = giaThapNhatSauGiam != null ? giaThapNhatSauGiam : giaThapNhat;
+        this.giaCaoNhatSauGiam = giaCaoNhatSauGiam != null ? giaCaoNhatSauGiam : giaCaoNhat;
     }
 }

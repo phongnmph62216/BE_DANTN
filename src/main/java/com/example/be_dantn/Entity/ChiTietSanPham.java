@@ -18,7 +18,7 @@ public class ChiTietSanPham {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String maChiTietSanPham; // Bổ sung
+    private String maChiTietSanPham;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_san_pham")
@@ -32,11 +32,15 @@ public class ChiTietSanPham {
     @JoinColumn(name = "id_kich_thuoc")
     private KichThuoc kichThuoc;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "id_dot_giam_gia")
+    private DotGiamGia dotGiamGia; // Bổ sung
+
     private Integer soLuongTon;
     private BigDecimal giaNhap;
     private BigDecimal giaBan;
     private String anh;
-    private Integer trangThai; // Bổ sung
+    private Integer trangThai;
 
     private LocalDateTime ngayTao;
     private LocalDateTime ngaySua;

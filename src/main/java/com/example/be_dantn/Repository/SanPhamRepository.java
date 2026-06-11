@@ -26,12 +26,16 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
                 cl.tenChatLieu,
                 SUM(ctsp.soLuongTon),
                 MIN(ctsp.giaBan),
-                MAX(ctsp.giaBan)
+                MAX(ctsp.giaBan),
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN dgg.phanTramGiam ELSE 0 END),
+                MIN(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN ctsp.giaBan * (100 - dgg.phanTramGiam) / 100 ELSE ctsp.giaBan END),
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN ctsp.giaBan * (100 - dgg.phanTramGiam) / 100 ELSE ctsp.giaBan END)
             )
             FROM SanPham sp
             LEFT JOIN sp.thuongHieu th
             LEFT JOIN sp.chatLieu cl
             LEFT JOIN ChiTietSanPham ctsp ON sp.id = ctsp.sanPham.id
+            LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
                 (:keyword IS NULL OR sp.maSanPham LIKE %:keyword% OR sp.tenSanPham LIKE %:keyword%)
             AND (:idThuongHieu IS NULL OR sp.thuongHieu.id = :idThuongHieu)
@@ -55,12 +59,16 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
             SELECT new com.example.be_dantn.Dto.Response.SanPhamResponse(
                 sp.id, sp.maSanPham, sp.tenSanPham, sp.hinhAnh, sp.trangThai,
                 th.tenThuongHieu, cl.tenChatLieu, SUM(ctsp.soLuongTon),
-                MIN(ctsp.giaBan), MAX(ctsp.giaBan)
+                MIN(ctsp.giaBan), MAX(ctsp.giaBan),
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN dgg.phanTramGiam ELSE 0 END),
+                MIN(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN ctsp.giaBan * (100 - dgg.phanTramGiam) / 100 ELSE ctsp.giaBan END),
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN ctsp.giaBan * (100 - dgg.phanTramGiam) / 100 ELSE ctsp.giaBan END)
             )
             FROM SanPham sp
             LEFT JOIN sp.thuongHieu th
             LEFT JOIN sp.chatLieu cl
             LEFT JOIN ChiTietSanPham ctsp ON sp.id = ctsp.sanPham.id
+            LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
                 (:keyword IS NULL OR sp.maSanPham LIKE %:keyword% OR sp.tenSanPham LIKE %:keyword%)
             AND (:idThuongHieu IS NULL OR sp.thuongHieu.id = :idThuongHieu)

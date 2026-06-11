@@ -20,4 +20,8 @@ public class ChiTietSanPhamResponseDTO {
     private BigDecimal giaNhap;
     private BigDecimal giaBan;
     private Integer trangThai;
+    private Integer phanTramGiam;
+    private java.time.LocalDateTime ngayBatDau;
+    private java.time.LocalDateTime ngayKetThuc;
+    private Integer trangThaiDotGiamGia;
 }

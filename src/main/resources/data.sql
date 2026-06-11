@@ -83,16 +83,24 @@ INSERT INTO san_pham (ma_san_pham, ten_san_pham, mo_ta, hinh_anh, trang_thai, id
                                                                                                                                                                                                                 ('SP001', N'Áo Polo Nike', N'Áo polo thể thao, thoáng mát', '/uploads/243c8d88-ce3a-4d07-ac23-153e3c1db4dd.png', 1, 1, 1, 1, 2, 1, 2, 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                                                                                                                                                                                                                 ('SP002', N'Áo Thun Adidas', N'Áo thun 3 sọc huyền thoại', '/uploads/29aec001-d056-42f2-b7d1-5ec7e64e1ec1.png', 1, 2, 1, 2, 2, 1, 1, 1, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
+-- Seed data for dot_giam_gia
+INSERT INTO dot_giam_gia (ma_dot_giam_gia, ten_dot_giam_gia, phan_tram_giam, trang_thai, ngay_bat_dau, ngay_ket_thuc, nguoi_tao, nguoi_sua) VALUES
+('DGG001', N'Giảm giá cuối năm', 15, 1, '2024-12-20 00:00:00', '2024-12-31 23:59:59', 'system', 'system'),
+('DGG002', N'Chào hè sôi động', 20, 1, '2024-06-01 00:00:00', '2024-06-15 23:59:59', 'system', 'system'),
+('DGG003', N'Black Friday', 50, 0, '2023-11-24 00:00:00', '2023-11-26 23:59:59', 'system', 'system'),
+('DGG004', N'Xả hàng tồn kho', 30, 1, '2024-07-15 00:00:00', '2024-07-31 23:59:59', 'system', 'system'),
+('DGG005', N'Mừng sinh nhật shop', 10, 1, '2024-08-08 00:00:00', '2024-08-10 23:59:59', 'system', 'system');
+
 -- Seed data for chi_tiet_san_pham
 -- Product 1: Áo Polo Nike
-INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua) VALUES
-                                                                                                                                                                       ('CTSP001', 1, 1, 2, 50, 200000, 350000, '/uploads/d4fd4a55-abcb-4441-81b1-c4159cd5c6e9.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                                                                       ('CTSP002', 1, 1, 3, 30, 200000, 350000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                                                                       ('CTSP003', 1, 2, 2, 60, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                                                                       ('CTSP004', 1, 2, 3, 40, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua, id_dot_giam_gia) VALUES
+                                                                                                                                                                       ('CTSP001', 1, 1, 2, 50, 200000, 350000, '/uploads/d4fd4a55-abcb-4441-81b1-c4159cd5c6e9.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+                                                                                                                                                                       ('CTSP002', 1, 1, 3, 30, 200000, 350000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+                                                                                                                                                                       ('CTSP003', 1, 2, 2, 60, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+                                                                                                                                                                       ('CTSP004', 1, 2, 3, 40, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);
 
 -- Product 2: Áo Thun Adidas
-INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua) VALUES
-                                                                                                                                                                       ('CTSP005', 2, 4, 1, 100, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                                                                       ('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-                                                                                                                                                                       ('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua, id_dot_giam_gia) VALUES
+                                                                                                                                                                       ('CTSP005', 2, 4, 1, 100, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+                                                                                                                                                                       ('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+                                                                                                                                                                       ('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);

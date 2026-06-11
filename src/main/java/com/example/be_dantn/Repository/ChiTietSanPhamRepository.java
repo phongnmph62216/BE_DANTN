@@ -27,12 +27,17 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
                 ctsp.soLuongTon,
                 ctsp.giaNhap,
                 ctsp.giaBan,
-                ctsp.trangThai
+                ctsp.trangThai,
+                dgg.phanTramGiam,
+                dgg.ngayBatDau,
+                dgg.ngayKetThuc,
+                dgg.trangThai
             )
             FROM ChiTietSanPham ctsp
             JOIN ctsp.sanPham sp
             JOIN ctsp.mauSac ms
             JOIN ctsp.kichThuoc kt
+            LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
                 (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword%)
             AND (:idMauSac IS NULL OR ms.id = :idMauSac)
@@ -63,12 +68,17 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
                 ctsp.soLuongTon,
                 ctsp.giaNhap,
                 ctsp.giaBan,
-                ctsp.trangThai
+                ctsp.trangThai,
+                dgg.phanTramGiam,
+                dgg.ngayBatDau,
+                dgg.ngayKetThuc,
+                dgg.trangThai
             )
             FROM ChiTietSanPham ctsp
             JOIN ctsp.sanPham sp
             JOIN ctsp.mauSac ms
             JOIN ctsp.kichThuoc kt
+            LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
                 (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword%)
             AND (:idMauSac IS NULL OR ms.id = :idMauSac)

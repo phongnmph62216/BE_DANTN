@@ -17,129 +17,70 @@ This document outlines the RESTful API endpoints for managing products, product 
 ---
 
 ## I. Quản Lý Hình Ảnh (Image Management)
-
 *   **Base URL:** `/api/v1/images`
+*   **POST /api/v1/images/upload**: Tải lên một file ảnh và trả về URL tương đối.
+
+---
+
+## II. Quản Lý Đợt Giảm Giá (Sales Campaigns)
+*   **Base URL:** `/api/v1/dot-giam-gia`
 
 ### Endpoints:
+*   **GET /api/v1/dot-giam-gia**
+    *   **Description:** Lấy danh sách các đợt giảm giá, hỗ trợ phân trang và lọc.
+    *   **Query Parameters:**
+        *   `keyword` (String): Tìm theo mã hoặc tên đợt giảm giá.
+        *   `trangThai` (Integer): Lọc theo trạng thái.
+        *   `tuNgay` (LocalDateTime): Lọc các đợt có ngày bắt đầu sau hoặc bằng ngày này (Format: `YYYY-MM-DDTHH:mm:ss`).
+        *   `denNgay` (LocalDateTime): Lọc các đợt có ngày bắt đầu trước hoặc bằng ngày này (Format: `YYYY-MM-DDTHH:mm:ss`).
+        *   `page`, `size`.
+    *   **Response Data:** `Page<DotGiamGiaResponseDTO>`
 
-*   **POST /api/v1/images/upload**
-    *   **Description:** Tải lên một file ảnh. API sẽ lưu file vào thư mục `uploads` trên server và trả về đường dẫn tương đối của ảnh.
-    *   **Request:** `multipart/form-data` với key là `file`.
-    *   **Response Data:** `String` (URL của ảnh, ví dụ: `/uploads/ten_file_duy_nhat.jpg`)
+*   **POST /api/v1/dot-giam-gia**
+    *   **Description:** Tạo mới một đợt giảm giá và áp dụng nó cho danh sách các biến thể sản phẩm.
+    *   **Request Body:** `DotGiamGiaCreateRequest`
+        ```json
+        {
+          "tenDotGiamGia": "Siêu Sale Giữa Năm",
+          "phanTramGiam": 20,
+          "ngayBatDau": "2024-06-01T00:00:00",
+          "ngayKetThuc": "2024-06-15T23:59:59",
+          "danhSachIdChiTietSanPham": [1, 2, 5] // Mảng ID của các biến thể cần áp dụng
+        }
+        ```
+
+*   **PATCH /api/v1/dot-giam-gia/{id}/status**
+    *   **Description:** Đảo ngược trạng thái của một đợt giảm giá.
 
 ---
 
-## II. Quản Lý Sản Phẩm (Product Management)
+## III. Quản Lý Sản Phẩm (Product Management)
 
 ### 1. Sản Phẩm (Product)
-
 *   **Base URL:** `/api/v1/san-pham`
-
-#### Endpoints:
-
-*   **GET /api/v1/san-pham**
-    *   **Description:** Lấy danh sách sản phẩm, hỗ trợ phân trang, tìm kiếm theo `keyword` (mã/tên), và lọc theo `idThuongHieu`, `idChatLieu`, `trangThai`.
-    *   **Query Parameters:** `page`, `size`, `keyword`, `idThuongHieu`, `idChatLieu`, `trangThai`
-    *   **Response Data:** `Page<SanPhamResponse>`
-
-*   **GET /api/v1/san-pham/{id}**
-    *   **Description:** Lấy thông tin chi tiết của một sản phẩm (bao gồm 8 ID thuộc tính) để hiển thị lên form cập nhật.
-    *   **Response Data:** `SanPhamDetailResponse`
-    *   **DTO Structure (`SanPhamDetailResponse`):**
-        ```json
-        {
-          "id": 1,
-          "maSanPham": "SP001",
-          "tenSanPham": "Áo Polo Nike",
-          "moTa": "Mô tả...",
-          "hinhAnh": "/uploads/anh.jpg",
-          "trangThai": 1,
-          "idThuongHieu": 1,
-          "idChatLieu": 1,
-          "idXuatSu": 1,
-          "idKieuDang": 2,
-          "idLoaiSanPham": 1,
-          "idCoAo": 2,
-          "idTayAo": 1,
-          "idVaiAo": 2
-        }
-        ```
-
-*   **GET /api/v1/san-pham/qr-scan/{maSanPham}**
-    *   **Description:** Lấy thông tin chi tiết của một sản phẩm dựa vào mã QR code (`maSanPham`). Dùng chung DTO với API GET theo ID.
-    *   **Response Data:** `SanPhamDetailResponse`
-
-*   **POST /api/v1/san-pham**
-    *   **Description:** Thêm mới một sản phẩm và các biến thể của nó.
-    *   **Request Body:** `SanPhamCreateRequest`
-
-*   **PUT /api/v1/san-pham/{id}**
-    *   **Description:** Cập nhật thông tin cơ bản và 8 thuộc tính của một sản phẩm. API này không ảnh hưởng đến các biến thể.
-    *   **Request Body:** `SanPhamUpdateRequest`
-        ```json
-        {
-          "tenSanPham": "Áo Polo Nike Mới",
-          "moTa": "Mô tả đã cập nhật",
-          "hinhAnh": "/uploads/new_image.jpg",
-          "trangThai": 1,
-          "idThuongHieu": 1,
-          "idChatLieu": 1,
-          "idXuatSu": 1,
-          "idKieuDang": 2,
-          "idLoaiSanPham": 1,
-          "idCoAo": 2,
-          "idTayAo": 1,
-          "idVaiAo": 2
-        }
-        ```
-    *   **Response Data:** `SanPhamDetailResponse` (Dữ liệu sản phẩm sau khi cập nhật).
-
-*   **PATCH /api/v1/san-pham/{id}/status**
-    *   **Description:** Đảo ngược trạng thái của sản phẩm (1: Kinh doanh, 0: Ngừng kinh doanh).
-
-*   **GET /api/v1/san-pham/export-excel**
-    *   **Description:** Xuất danh sách sản phẩm ra file Excel. API này nhận các tham số lọc của API GET (trừ phân trang).
-    *   **Query Parameters:** `keyword`, `idThuongHieu`, `idChatLieu`, `trangThai`.
-    *   **Response:** File `.xlsx`.
+*   **GET /**: Lấy danh sách sản phẩm (phân trang, lọc).
+*   **GET /{id}**: Lấy chi tiết sản phẩm.
+*   **GET /qr-scan/{maSanPham}**: Lấy chi tiết sản phẩm bằng mã QR.
+*   **POST /**: Thêm mới sản phẩm và các biến thể.
+*   **PUT /{id}**: Cập nhật thông tin cơ bản của sản phẩm.
+*   **PATCH /{id}/status**: Đảo ngược trạng thái sản phẩm.
+*   **GET /export-excel**: Xuất danh sách sản phẩm ra file Excel.
 
 ### 2. Biến Thể Sản Phẩm (Product Variant)
-
 *   **Base URL:** `/api/v1/chi-tiet-san-pham`
-
-#### Endpoints:
-
-*   **GET /api/v1/chi-tiet-san-pham**
-    *   **Description:** Lấy danh sách tất cả các biến thể sản phẩm, hỗ trợ phân trang và bộ lọc đa dạng.
-    *   **Query Parameters:** `keyword`, `idMauSac`, `idKichThuoc`, `trangThai`, `minPrice`, `maxPrice`, `page`, `size`.
-    *   **Response Data:** `Page<ChiTietSanPhamResponseDTO>`
-
-*   **GET /api/v1/chi-tiet-san-pham/{id}**
-    *   **Description:** Lấy thông tin chi tiết của một biến thể để hiển thị lên form cập nhật.
-    *   **Response Data:** `ChiTietSanPhamResponseDTO`
-
-*   **GET /api/v1/chi-tiet-san-pham/qr-scan/{maChiTietSanPham}**
-    *   **Description:** Lấy thông tin chi tiết của một biến thể dựa vào mã QR code (`maChiTietSanPham`).
-    *   **Response Data:** `ChiTietSanPhamResponseDTO`
-
-*   **PUT /api/v1/chi-tiet-san-pham/{id}**
-    *   **Description:** Cập nhật thông tin chi tiết của một biến thể.
-    *   **Request Body:** `ChiTietSanPhamUpdateRequest`
-
-*   **PATCH /api/v1/chi-tiet-san-pham/{id}/status**
-    *   **Description:** Đảo ngược trạng thái của một biến thể (1: Đang bán, 0: Ngừng bán).
-
-*   **GET /api/v1/chi-tiet-san-pham/export-excel**
-    *   **Description:** Xuất danh sách biến thể ra file Excel.
-    *   **Query Parameters:** `keyword`, `idMauSac`, `idKichThuoc`, `trangThai`, `minPrice`, `maxPrice`.
-    *   **Response:** File `.xlsx`.
+*   **GET /**: Lấy danh sách biến thể (phân trang, lọc đa dạng).
+*   **GET /{id}**: Lấy chi tiết một biến thể.
+*   **GET /qr-scan/{maChiTietSanPham}**: Lấy chi tiết biến thể bằng mã QR.
+*   **PUT /{id}**: Cập nhật một biến thể.
+*   **PATCH /{id}/status**: Đảo ngược trạng thái một biến thể.
+*   **GET /export-excel**: Xuất danh sách biến thể ra file Excel.
 
 ---
 
-## III. Thuộc Tính Sản Phẩm (Product Attributes)
+## IV. Thuộc Tính (Attributes)
 
 ### 0. Lấy tất cả thuộc tính (Dành cho Dropdown/Combobox)
-
 *   **Endpoint:** `GET /api/v1/attributes/all-active`
-*   **Description:** API tiện ích giúp lấy danh sách id và tên của TẤT CẢ 10 thuộc tính đang hoạt động (`trangThai = 1`) chỉ trong 1 lần gọi.
+*   **Description:** API tiện ích để lấy tất cả 10 thuộc tính đang hoạt động.
 
-*... (Các API thuộc tính khác tương tự)*
+*... (Các API CRUD cho từng thuộc tính)*
