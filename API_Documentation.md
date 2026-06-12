@@ -1,6 +1,6 @@
-# API Documentation for Product and Attributes
+# API Documentation
 
-This document outlines the RESTful API endpoints for managing products, product attributes, and related functionalities. These APIs follow a standard CRUD pattern, and also support pagination, searching, and filtering for collection endpoints.
+This document outlines the RESTful API endpoints for managing the system's core modules, including Products, Attributes, Sales Campaigns, and Customers. These APIs follow a standard CRUD pattern and support pagination, searching, and filtering for collection endpoints.
 
 ## General API Structure
 
@@ -26,38 +26,22 @@ This document outlines the RESTful API endpoints for managing products, product 
 *   **Base URL:** `/api/v1/dot-giam-gia`
 
 ### Endpoints:
-*   **GET /api/v1/dot-giam-gia**
+*   **GET /**
     *   **Description:** Lấy danh sách các đợt giảm giá, hỗ trợ phân trang và lọc.
-    *   **Query Parameters:**
-        *   `keyword` (String): Tìm theo mã hoặc tên đợt giảm giá.
-        *   `trangThai` (Integer): Lọc theo trạng thái.
-        *   `tuNgay` (LocalDateTime): Lọc các đợt có ngày bắt đầu sau hoặc bằng ngày này (Format: `YYYY-MM-DDTHH:mm:ss`).
-        *   `denNgay` (LocalDateTime): Lọc các đợt có ngày bắt đầu trước hoặc bằng ngày này (Format: `YYYY-MM-DDTHH:mm:ss`).
-        *   `page`, `size`.
+    *   **Query Parameters:** `keyword` (String), `trangThai` (Integer), `tuNgay` (LocalDateTime), `denNgay` (LocalDateTime), `page`, `size`.
     *   **Response Data:** `Page<DotGiamGiaResponseDTO>`
 
-*   **GET /api/v1/dot-giam-gia/{id}**
+*   **GET /{id}**
     *   **Description:** Lấy thông tin chi tiết một đợt giảm giá để hiển thị lên Form cập nhật. Đặc biệt trả về thêm danh sách các biến thể sản phẩm đang được áp dụng.
     *   **Response Data:** `DotGiamGiaResponseDTO` (Bao gồm trường `danhSachIdChiTietSanPham`).
 
-*   **POST /api/v1/dot-giam-gia**
+*   **POST /**
     *   **Description:** Tạo mới một đợt giảm giá và áp dụng nó cho danh sách các biến thể sản phẩm.
-    *   **Request Body:** `DotGiamGiaCreateRequest`
-        ```json
-        {
-          "tenDotGiamGia": "Siêu Sale Giữa Năm",
-          "phanTramGiam": 20,
-          "ngayBatDau": "2024-06-01T00:00:00",
-          "ngayKetThuc": "2024-06-15T23:59:59",
-          "danhSachIdChiTietSanPham": [1, 2, 5] // Mảng ID của các biến thể cần áp dụng
-        }
-        ```
 
-*   **PUT /api/v1/dot-giam-gia/{id}**
-    *   **Description:** Cập nhật thông tin đợt giảm giá và danh sách các biến thể sản phẩm áp dụng đợt giảm giá này.
-    *   **Request Body:** `DotGiamGiaUpdateRequest` (Cấu trúc tương tự CreateRequest).
+*   **PUT /{id}**
+    *   **Description:** Cập nhật thông tin đợt giảm giá và danh sách các biến thể sản phẩm áp dụng.
 
-*   **PATCH /api/v1/dot-giam-gia/{id}/status**
+*   **PATCH /{id}/status**
     *   **Description:** Đảo ngược trạng thái của một đợt giảm giá.
 
 ---
@@ -92,3 +76,40 @@ This document outlines the RESTful API endpoints for managing products, product 
 *   **Description:** API tiện ích để lấy tất cả 10 thuộc tính đang hoạt động.
 
 *... (Các API CRUD cho từng thuộc tính)*
+
+---
+
+## V. Quản Lý Khách Hàng (Customer Management)
+*   **Base URL:** `/api/v1/khach-hang`
+
+### 1. API Khách Hàng
+*   **GET /**
+    *   **Description:** Lấy danh sách khách hàng (Có phân trang & Lọc).
+    *   **Query Parameters:** `keyword` (Tên, SĐT, Email), `gioiTinh`, `trangThai`, `page`, `size`.
+    *   **Response Data:** `Page<KhachHangResponseDTO>` (Chứa trường `diaChiMacDinh` gộp sẵn).
+
+*   **GET /{id}**
+    *   **Description:** Lấy thông tin chi tiết khách hàng và toàn bộ danh sách địa chỉ.
+    *   **Response Data:** `KhachHangDetailResponseDTO` (Chứa thông tin cơ bản và `List<DiaChiResponseDTO>` với địa chỉ mặc định được xếp lên đầu).
+
+*   **POST /**
+    *   **Description:** Thêm mới một khách hàng.
+    *   **Request Body:** `KhachHangRequest`
+
+*   **PUT /{id}**
+    *   **Description:** Cập nhật thông tin cơ bản của khách hàng (Không bao gồm địa chỉ).
+    *   **Request Body:** `KhachHangRequest`
+
+*   **PATCH /{id}/status**
+    *   **Description:** Đảo ngược trạng thái hoạt động của khách hàng.
+
+*   **GET /export-excel**
+    *   **Description:** Xuất danh sách khách hàng ra file Excel.
+
+### 2. API Địa Chỉ (Lồng trong Khách Hàng)
+*   **POST /{khachHangId}/dia-chi**
+    *   **Description:** Thêm mới một địa chỉ cho khách hàng. Nếu là địa chỉ đầu tiên, tự động gán làm mặc định. Nếu gửi lên `kieuDiaChiLaMacDinh = true`, các địa chỉ cũ sẽ được cập nhật thành `false`.
+    *   **Request Body:** `DiaChiRequest`
+
+*   **PATCH /{khachHangId}/dia-chi/{diaChiId}/mac-dinh**
+    *   **Description:** Cập nhật một địa chỉ cụ thể làm địa chỉ mặc định, đồng thời gỡ bỏ trạng thái mặc định của các địa chỉ khác thuộc cùng khách hàng.

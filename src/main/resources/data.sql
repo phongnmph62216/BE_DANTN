@@ -10,9 +10,9 @@ INSERT INTO chat_lieu (ma_chat_lieu, ten_chat_lieu, trang_thai, ngay_tao, ngay_s
 INSERT INTO loai_san_pham (ma_loai_san_pham, ten_loai_san_pham, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
                                                                                                                           ('LSP001', N'Áo thun', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
                                                                                                                           ('LSP002', N'Áo sơ mi', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
-                                                                                                                          ('LSP003', N'Quần jean', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
-                                                                                                                          ('LSP004', N'Váy', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
-                                                                                                                          ('LSP005', N'Áo khoác', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
+                                                                                                                          ('LSP003', N'Áo cộc', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
+                                                                                                                          ('LSP004', N'Áo mùa hè', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),
+                                                                                                                          ('LSP005', N'Áo lười', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL);
 
 -- Seed data for thuong_hieu
 INSERT INTO thuong_hieu (ma_thuong_hieu, ten_thuong_hieu, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
@@ -104,3 +104,24 @@ INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id
                                                                                                                                                                        ('CTSP005', 2, 4, 1, 100, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
                                                                                                                                                                        ('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
                                                                                                                                                                        ('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);
+
+-- Seed data for khach_hang
+INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh, trang_thai, ngay_tao, ngay_sua) VALUES
+('KH001', N'Nguyễn Văn An', '0987654321', 'an.nguyen@example.com', 1, '1990-05-15', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('KH002', N'Trần Thị Bình', '0912345678', 'binh.tran@example.com', 0, '1995-08-20', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('KH003', N'Lê Văn Cường', '0333444555', 'cuong.le@example.com', 1, '1988-11-30', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('KH004', N'Phạm Thị Dung', '0777888999', 'dung.pham@example.com', 0, '2001-02-10', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Seed data for dia_chi
+-- Addresses for Nguyễn Văn An (ID: 1)
+INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
+(1, N'Nguyễn Văn An', '0987654321', N'Số 123, Đường Giải Phóng', N'Hà Nội', N'Hai Bà Trưng', N'Phường Đồng Tâm', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, N'Nguyễn Văn An', '0987654321', N'Tầng 10, Tòa nhà Keangnam', N'Hà Nội', N'Nam Từ Liêm', N'Phường Mễ Trì', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Addresses for Trần Thị Bình (ID: 2)
+INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
+(2, N'Trần Thị Bình', '0912345678', N'456 Lê Lợi, Phường Bến Nghé', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Bến Nghé', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Addresses for Phạm Thị Dung (ID: 4)
+INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
+(4, N'Phạm Thị Dung', '0777888999', N'Ký túc xá khu B, Đại học Quốc gia', N'TP. Hồ Chí Minh', N'Thủ Đức', N'Phường Linh Trung', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
