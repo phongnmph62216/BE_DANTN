@@ -45,7 +45,7 @@ public class NhanVienServiceIMPL implements NhanvienService {
     public NhanVienRespon findById(long id) {
         return nhanVienRepository.findById(id)
                 .map(nhanVien -> modelMapper.map(nhanVien,NhanVienRespon.class))
-                .orElseThrow(() -> new CustomResourceotFoundException("nhan vien not found with id " + id));
+                .orElseThrow(() -> new CustomResourceotFoundException("nhan vien không tìm thấy với id  " + id));
     }
 
     @Override
@@ -89,7 +89,11 @@ public class NhanVienServiceIMPL implements NhanvienService {
 
         NhanVien saved = nhanVienRepository.save(nhanVien);
 
-        String maTuDong = String.format("NV%05d", saved.getId());
+        String maTuDong = String.format(
+                "%s%05d",
+                "Quản lý".equalsIgnoreCase(saved.getVaiTro()) ? "QL" : "NV",
+                saved.getId()
+        );
 
         saved.setMaNhanVien(maTuDong);
 

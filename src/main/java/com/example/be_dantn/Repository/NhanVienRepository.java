@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface NhanVienRepository extends JpaRepository<NhanVien, Long>{
     boolean existsByMaNhanVien(String maNhanVien);
+
     boolean existsByEmail(String email);
 
     boolean existsBySoDienThoai(String soDienThoai);

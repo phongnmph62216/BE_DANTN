@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -53,4 +55,12 @@ public class NhanVien {
     private String nguoiTao;
 
     private String nguoiSua;
+
+    @OneToMany(mappedBy = "nhanVien",cascade = CascadeType.ALL,fetch = FetchType.EAGER,orphanRemoval = true)
+    private Set<LichLamViec> lichLamViec = new HashSet<>();
+
+    @OneToMany(mappedBy = "nguoiTaoQuanLy",cascade = CascadeType.ALL,fetch = FetchType.EAGER,orphanRemoval = true)
+    private Set<LichLamViec> lichLamViecQuanLy = new HashSet<>();
+
+  
 }
