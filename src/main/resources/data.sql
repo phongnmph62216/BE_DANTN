@@ -145,3 +145,347 @@ INSERT INTO nhan_vien (id_vai_tro, ma_nhan_vien, ho_va_ten, so_dien_thoai, email
 (2, 'NV003', N'Lê Văn Minh', '0933445566', 'minhlv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
 (2, 'NV004', N'Phạm Văn Đức', '0977889900', 'ducpv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
 
+-- =========================================================
+-- Seed data for hoa_don
+-- Trang thai:
+-- 0: Tao moi
+-- 1: Cho xac nhan
+-- 2: Da xac nhan
+-- 3: Dang giao
+-- 4: Hoan thanh
+-- 5: Da huy
+--
+-- Loai hoa don:
+-- 0: Online
+-- 1: Tai quay
+-- 2: Giao hang
+-- =========================================================
+
+INSERT INTO hoa_don (
+    id_nhan_vien,
+    id_khach_hang,
+    id_phieu_giam_gia,
+    ma_hoa_don,
+    loai_hoa_don,
+    phi_van_chuyen,
+    so_tien_goc,
+    so_tien_giam,
+    tong_tien_thanh_toan,
+    ngay_thanh_toan,
+    ngay_nhan_hang,
+    trang_thai,
+    ghi_chu,
+    dia_chi,
+    ngay_tao,
+    ngay_sua,
+    nguoi_tao,
+    nguoi_sua
+) VALUES
+      (
+          1,
+          1,
+          1,
+          'HD000001',
+          1,
+          0,
+          1260000,
+          50000,
+          1210000,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          4,
+          N'Khách mua trực tiếp tại quầy',
+          N'123 Nguyễn Văn Linh, Quận 7, TP.HCM',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          2,
+          2,
+          2,
+          'HD000002',
+          0,
+          30000,
+          640000,
+          20000,
+          650000,
+          NULL,
+          NULL,
+          1,
+          N'Đơn online đang chờ xác nhận',
+          N'456 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          3,
+          4,
+          NULL,
+          'HD000003',
+          2,
+          25000,
+          650000,
+          0,
+          675000,
+          NULL,
+          NULL,
+          3,
+          N'Đơn giao hàng đang vận chuyển cho khách',
+          N'Ký túc xá khu B, Đại học Quốc gia, TP. Hồ Chí Minh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          1,
+          1,
+          NULL,
+          'HD000004',
+          1,
+          0,
+          350000,
+          0,
+          350000,
+          NULL,
+          NULL,
+          5,
+          N'Khách hủy hóa đơn do đổi ý',
+          N'123 Nguyễn Văn Linh, Quận 7, TP.HCM',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      );
+
+-- =========================================================
+-- Seed data for hoa_don_chi_tiet
+-- =========================================================
+
+INSERT INTO hoa_don_chi_tiet (
+    id_hoa_don,
+    id_chi_tiet_san_pham,
+    don_gia,
+    so_luong,
+    thanh_tien,
+    trang_thai,
+    ngay_tao,
+    ngay_sua,
+    nguoi_tao,
+    nguoi_sua
+) VALUES
+      (
+          1,
+          1,
+          350000,
+          1,
+          350000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          1,
+          5,
+          280000,
+          2,
+          560000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          1,
+          2,
+          350000,
+          1,
+          350000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          2,
+          3,
+          360000,
+          1,
+          360000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          2,
+          6,
+          280000,
+          1,
+          280000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          3,
+          7,
+          290000,
+          1,
+          290000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          3,
+          4,
+          360000,
+          1,
+          360000,
+          1,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      ),
+      (
+          4,
+          1,
+          350000,
+          1,
+          350000,
+          0,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          'system',
+          'system'
+      );
+
+-- =========================================================
+-- Seed data for lich_su_hoa_don
+-- =========================================================
+
+INSERT INTO lich_su_hoa_don (
+    id_hoa_don,
+    id_nhan_vien,
+    trang_thai,
+    hanh_dong,
+    ghi_chu,
+    nguoi_thuc_hien,
+    thoi_gian,
+    ngay_tao
+) VALUES
+      (
+          1,
+          1,
+          0,
+          N'Tạo hóa đơn',
+          N'Hóa đơn được tạo tại quầy',
+          N'Trần Tuấn Linh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          1,
+          1,
+          2,
+          N'Đã xác nhận',
+          N'Nhân viên xác nhận đủ sản phẩm trong kho',
+          N'Trần Tuấn Linh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          1,
+          1,
+          4,
+          N'Hoàn thành',
+          N'Khách đã thanh toán và nhận hàng',
+          N'Trần Tuấn Linh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          2,
+          2,
+          0,
+          N'Tạo hóa đơn',
+          N'Hóa đơn online được tạo',
+          N'Nguyễn Thị Hương',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          2,
+          2,
+          1,
+          N'Chờ xác nhận',
+          N'Đơn hàng đang chờ nhân viên xác nhận',
+          N'Nguyễn Thị Hương',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          3,
+          3,
+          0,
+          N'Tạo hóa đơn giao hàng',
+          N'Hóa đơn giao hàng được tạo',
+          N'Lê Văn Minh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          3,
+          3,
+          2,
+          N'Đã xác nhận',
+          N'Đơn hàng đã được xác nhận',
+          N'Lê Văn Minh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          3,
+          3,
+          3,
+          N'Đang giao',
+          N'Đơn hàng đã bàn giao cho đơn vị vận chuyển',
+          N'Lê Văn Minh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          4,
+          1,
+          0,
+          N'Tạo hóa đơn',
+          N'Hóa đơn được tạo tại quầy',
+          N'Trần Tuấn Linh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      ),
+      (
+          4,
+          1,
+          5,
+          N'Đã hủy',
+          N'Khách hủy hóa đơn do đổi ý',
+          N'Trần Tuấn Linh',
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP
+      );
