@@ -125,3 +125,10 @@ INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_t
 -- Addresses for Phạm Thị Dung (ID: 4)
 INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
 (4, N'Phạm Thị Dung', '0777888999', N'Ký túc xá khu B, Đại học Quốc gia', N'TP. Hồ Chí Minh', N'Thủ Đức', N'Phường Linh Trung', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Seed data for phieu_giam_gia
+INSERT INTO phieu_giam_gia (ma_phieu_giam_gia, ten_phieu_giam_gia, loai_giam, gia_tri, gia_giam_toi_da, dieu_kien_giam, so_luong, kieu_ap_dung, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_sua) VALUES
+('PGG_KM10', N'Khuyến mãi 10%', 0, 10.00, 50000.00, 200000.00, 100, 0, '2024-07-01 00:00:00', '2024-07-31 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('PGG_GIAM20K', N'Giảm ngay 20K', 1, 20000.00, NULL, 100000.00, 200, 0, '2024-07-15 00:00:00', '2024-08-15 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('PGG_BLACKFRIDAY', N'Black Friday Sale', 0, 50.00, 100000.00, 500000.00, 50, 0, '2023-11-24 00:00:00', '2023-11-26 23:59:59', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('PGG_TRIANKH', N'Tri ân khách hàng thân thiết', 1, 100000.00, NULL, 1000000.00, 10, 1, '2024-08-01 00:00:00', '2024-08-31 23:59:59', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

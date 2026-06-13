@@ -3,6 +3,7 @@ package com.example.be_dantn.Dto.Response;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.time.LocalDate;
 
 @Data
 @NoArgsConstructor
@@ -16,4 +17,6 @@ public class KhachHangResponseDTO {
     private Integer gioiTinh;
     private Integer trangThai;
     private String diaChiMacDinh;
+    private LocalDate ngaySinh;
 }
+

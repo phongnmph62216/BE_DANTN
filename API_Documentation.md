@@ -113,3 +113,50 @@ This document outlines the RESTful API endpoints for managing the system's core 
 
 *   **PATCH /{khachHangId}/dia-chi/{diaChiId}/mac-dinh**
     *   **Description:** Cập nhật một địa chỉ cụ thể làm địa chỉ mặc định, đồng thời gỡ bỏ trạng thái mặc định của các địa chỉ khác thuộc cùng khách hàng.
+
+---
+
+## VI. Quản Lý Phiếu Giảm Giá (Voucher Management)
+*   **Base URL:** `/api/v1/phieu-giam-gia`
+
+### Endpoints:
+*   **GET /**
+    *   **Description:** Lấy danh sách các phiếu giảm giá, hỗ trợ phân trang và đa bộ lọc.
+    *   **Query Parameters:**
+        *   `keyword` (String): Tìm theo mã hoặc tên phiếu.
+        *   `loaiGiam` (Integer): Lọc theo loại giảm (0: %, 1: Tiền).
+        *   `tuNgay` (LocalDateTime): Lọc các phiếu có ngày kết thúc sau hoặc bằng ngày này.
+        *   `denNgay` (LocalDateTime): Lọc các phiếu có ngày bắt đầu trước hoặc bằng ngày này.
+        *   `trangThai` (Integer): Lọc theo trạng thái (0: Sắp diễn ra, 1: Đang diễn ra, 2: Đã kết thúc).
+        *   `page`, `size`.
+    *   **Response Data:** `Page<PhieuGiamGiaResponseDTO>`
+
+*   **GET /{id}**
+    *   **Description:** Lấy chi tiết thông tin phiếu giảm giá để hiển thị lên Form cập nhật. Đặc biệt trả về mảng `danhSachKhachHangIds` (chứa các ID khách hàng đang được áp dụng phiếu này).
+    *   **Response Data:** `PhieuGiamGiaResponseDTO`
+
+*   **POST /**
+    *   **Description:** Tạo mới phiếu giảm giá. Lưu ý nếu áp dụng cá nhân (`kieuApDung = 1`) thì cần gửi lên mảng `danhSachKhachHangIds`.
+    *   **Request Body:** `PhieuGiamGiaCreateRequest`
+        ```json
+        {
+          "maPhieu": "SUMMER_SALE",
+          "tenPhieu": "Sale Mùa Hè",
+          "kieuApDung": 1,
+          "loaiGiam": 0,
+          "giaTriGiam": 20,
+          "giamToiDa": 100000,
+          "donToiThieu": 200000,
+          "soLuong": 100,
+          "ngayBatDau": "2024-07-01T00:00:00",
+          "ngayKetThuc": "2024-07-31T23:59:59",
+          "danhSachKhachHangIds": [1, 2]
+        }
+        ```
+
+*   **PUT /{id}**
+    *   **Description:** Cập nhật thông tin phiếu giảm giá. API này sẽ xóa toàn bộ danh sách khách hàng cũ đang áp dụng phiếu này (nếu có) và tạo mới các bản ghi dựa trên `danhSachKhachHangIds` gửi lên.
+    *   **Request Body:** `PhieuGiamGiaUpdateRequest` (Cấu trúc tương tự CreateRequest).
+
+*   **PATCH /{id}/status**
+    *   **Description:** Đảo ngược trạng thái hoạt động của phiếu giảm giá (VD: Đang diễn ra <-> Đã kết thúc).

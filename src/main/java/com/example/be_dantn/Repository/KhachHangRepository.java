@@ -23,7 +23,8 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Long> {
                 kh.email,
                 kh.gioiTinh,
                 kh.trangThai,
-                CONCAT(dc.diaChiCuThe, ', ', dc.phuongXa, ', ', dc.quanHuyen, ', ', dc.tinhThanhPho)
+                CONCAT(dc.diaChiCuThe, ', ', dc.phuongXa, ', ', dc.quanHuyen, ', ', dc.tinhThanhPho),
+                kh.ngaySinh
             )
             FROM KhachHang kh
             LEFT JOIN kh.danhSachDiaChi dc ON dc.kieuDiaChiLaMacDinh = true
@@ -48,7 +49,8 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Long> {
                 kh.email,
                 kh.gioiTinh,
                 kh.trangThai,
-                CONCAT(dc.diaChiCuThe, ', ', dc.phuongXa, ', ', dc.quanHuyen, ', ', dc.tinhThanhPho)
+                CONCAT(dc.diaChiCuThe, ', ', dc.phuongXa, ', ', dc.quanHuyen, ', ', dc.tinhThanhPho),
+                kh.ngaySinh
             )
             FROM KhachHang kh
             LEFT JOIN kh.danhSachDiaChi dc ON dc.kieuDiaChiLaMacDinh = true
