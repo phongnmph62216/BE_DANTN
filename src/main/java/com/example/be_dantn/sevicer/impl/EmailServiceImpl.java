@@ -89,4 +89,73 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send voucher email to {}: {}. Voucher saved successfully anyway.", toEmail, e.getMessage());
         }
     }
+
+    @Override
+    @Async
+    public void sendEmployeeAccountEmail(
+            String toEmail,
+            String employeeName,
+            String emailAccount,
+            String rawPassword
+    ) {
+        if (toEmail == null || toEmail.trim().isEmpty() || !toEmail.contains("@")) {
+            log.warn("Invalid email address: {}. Skipping account email delivery.", toEmail);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("[Bee Stylish] Thông Báo Cấp Tài Khoản Nhân Viên Mới");
+
+            String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; border-bottom: 2px solid #ef972d; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h2 style="color: #ef972d; margin: 0; font-size: 24px;">BEE STYLISH</h2>
+                        <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Hệ Thống Quản Lý Nhân Sự</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <p style="font-size: 16px; color: #333; line-height: 1.5;">Chào <strong>%s</strong>,</p>
+                        <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                            Tài khoản nhân viên của bạn đã được tạo thành công trên hệ thống quản trị <strong>Bee Stylish</strong>. Dưới đây là thông tin đăng nhập cá nhân của bạn:
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: #fffaf0; border: 1px dashed #ef972d; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                        <div style="margin-bottom: 10px; font-size: 15px; color: #333;">
+                            <strong>Tài khoản (Email):</strong> <span style="color: #2a6496; font-weight: bold;">%s</span>
+                        </div>
+                        <div style="font-size: 15px; color: #333;">
+                            <strong>Mật khẩu mặc định (SĐT):</strong> <span style="color: #ef972d; font-weight: bold;">%s</span>
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 14px; color: #8a6d3b; background-color: #fcf8e3; border: 1px solid #faebcc; padding: 12px; border-radius: 6px; margin-bottom: 25px; line-height: 1.5;">
+                        * <strong>Lưu ý:</strong> Vui lòng đăng nhập và tiến hành đổi mật khẩu ngay trong lần đăng nhập đầu tiên để bảo vệ an toàn thông tin cá nhân.
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <a href="http://localhost:5173" style="background-color: #ef972d; color: #ffffff; text-decoration: none; padding: 12px 30px; font-size: 15px; font-weight: bold; border-radius: 5px; display: inline-block;">Đăng nhập hệ thống</a>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; font-size: 12px; color: #999;">
+                        Nếu bạn không phải là người nhận thư này, vui lòng bỏ qua hoặc thông báo cho quản trị viên hệ thống.<br/>
+                        &copy; 2026 Bee Stylish. All rights reserved.
+                    </div>
+                </div>
+                """.formatted(employeeName, emailAccount, rawPassword);
+
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Employee account email sent successfully to: {}", toEmail);
+
+        } catch (Exception e) {
+            log.error("Failed to send employee account email to {}: {}", toEmail, e.getMessage());
+        }
+    }
 }

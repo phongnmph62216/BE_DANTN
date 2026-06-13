@@ -160,3 +160,32 @@ This document outlines the RESTful API endpoints for managing the system's core 
 
 *   **PATCH /{id}/status**
     *   **Description:** Đảo ngược trạng thái hoạt động của phiếu giảm giá (VD: Đang diễn ra <-> Đã kết thúc).
+
+---
+
+## VII. Quản Lý Nhân Viên (Employee Management)
+*   **Base URL:** `/api/v1/nhan-vien`
+
+### Endpoints:
+*   **GET /**
+    *   **Description:** Lấy danh sách nhân viên (Có phân trang & Lọc).
+    *   **Query Parameters:** `keyword` (Tên, SĐT, Email, Mã NV), `trangThai`, `page`, `size`.
+    *   **Response Data:** `Page<NhanVienResponseDTO>`
+
+*   **GET /{id}**
+    *   **Description:** Lấy thông tin chi tiết nhân viên để hiển thị lên Form sửa.
+    *   **Response Data:** `NhanVien` (Entity)
+
+*   **POST /**
+    *   **Description:** Thêm mới một nhân viên. Mật khẩu mặc định được đặt bằng số điện thoại và tự động mã hóa BCrypt.
+    *   **Request Body:** `NhanVienCreateRequest`
+
+*   **PUT /{id}**
+    *   **Description:** Cập nhật thông tin cơ bản của nhân viên.
+    *   **Request Body:** `NhanVienUpdateRequest`
+
+*   **PATCH /{id}/status**
+    *   **Description:** Đảo ngược trạng thái hoạt động của nhân viên.
+
+*   **GET /export-excel**
+    *   **Description:** Xuất danh sách nhân viên ra file Excel.

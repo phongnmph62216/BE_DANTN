@@ -132,3 +132,16 @@ INSERT INTO phieu_giam_gia (ma_phieu_giam_gia, ten_phieu_giam_gia, loai_giam, gi
 ('PGG_GIAM20K', N'Giảm ngay 20K', 1, 20000.00, NULL, 100000.00, 200, 0, '2024-07-15 00:00:00', '2024-08-15 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('PGG_BLACKFRIDAY', N'Black Friday Sale', 0, 50.00, 100000.00, 500000.00, 50, 0, '2023-11-24 00:00:00', '2023-11-26 23:59:59', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('PGG_TRIANKH', N'Tri ân khách hàng thân thiết', 1, 100000.00, NULL, 1000000.00, 10, 1, '2024-08-01 00:00:00', '2024-08-31 23:59:59', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Seed data for vai_tro
+INSERT INTO vai_tro (ma, ten, trang_thai) VALUES
+('ADMIN', N'Quản lý', 1),
+('STAFF', N'Nhân viên', 1);
+
+-- Seed data for nhan_vien
+INSERT INTO nhan_vien (id_vai_tro, ma_nhan_vien, ho_va_ten, so_dien_thoai, email, mat_khau, cccd, gioi_tinh, ngay_sinh, dia_chi, trang_thai, ngay_vao_lam, ngay_tao, ngay_sua, anh) VALUES
+(1, 'NV001', N'Trần Tuấn Linh', '0987654321', 'linhtt@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765432', 1, '1995-04-12', N'123 Nguyễn Văn Linh, Quận 7, TP.HCM', 1, '2023-01-15', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV002', N'Nguyễn Thị Hương', '0912345678', 'huongnt@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765433', 0, '1998-05-12', N'45 Lê Lợi, Quận 1, TP.HCM', 1, '2023-03-20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV003', N'Lê Văn Minh', '0933445566', 'minhlv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV004', N'Phạm Văn Đức', '0977889900', 'ducpv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
+

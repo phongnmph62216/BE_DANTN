@@ -31,6 +31,12 @@
     </properties>
     <dependencies>
 
+        <!-- Spring Boot Starter Security -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+
         <!-- Apache POI for Excel export -->
         <dependency>
             <groupId>org.apache.poi</groupId>

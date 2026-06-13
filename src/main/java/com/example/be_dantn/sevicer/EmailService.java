@@ -9,4 +9,11 @@ public interface EmailService {
             String discountDetails,
             String expiryDate
     );
+
+    void sendEmployeeAccountEmail(
+            String toEmail,
+            String employeeName,
+            String emailAccount,
+            String rawPassword
+    );
 }
