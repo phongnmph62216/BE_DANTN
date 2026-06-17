@@ -1,8 +1,10 @@
 package com.example.be_dantn.sevicer.impl;
+// Trigger compile at 4:26 PM
 
 import com.example.be_dantn.Dto.Request.DotGiamGiaCreateRequest;
 import com.example.be_dantn.Dto.Request.DotGiamGiaUpdateRequest;
 import com.example.be_dantn.Dto.Response.DotGiamGiaResponseDTO;
+
 import com.example.be_dantn.Entity.ChiTietSanPham;
 import com.example.be_dantn.Entity.DotGiamGia;
 import com.example.be_dantn.Exception.ResourceNotFoundException;
@@ -27,16 +29,29 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
     private final ChiTietSanPhamRepository chiTietSanPhamRepository; // Bổ sung
 
     @Override
+    @Transactional
     public Page<DotGiamGiaResponseDTO> getByFilters(String keyword, Integer trangThai, LocalDateTime tuNgay, LocalDateTime denNgay, Pageable pageable) {
+        LocalDateTime now = LocalDateTime.now();
+        dotGiamGiaRepository.updateExpiredStatus(now);
+        
         return dotGiamGiaRepository.findByFilters(keyword, trangThai, tuNgay, denNgay, pageable);
     }
+
 
     @Override
     @Transactional
     public void toggleStatus(Long id) {
         DotGiamGia dotGiamGia = dotGiamGiaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đợt giảm giá với id: " + id));
-        dotGiamGia.setTrangThai(dotGiamGia.getTrangThai() == 1 ? 0 : 1);
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đợt giảm giá với id: " + id));
+        if (dotGiamGia.getTrangThai() == 1) {
+            dotGiamGia.setTrangThai(0); // Đang hoạt động -> Ngừng hoạt động
+        } else {
+            if (dotGiamGia.getNgayKetThuc() != null && dotGiamGia.getNgayKetThuc().isAfter(LocalDateTime.now())) {
+                dotGiamGia.setTrangThai(1); // Ngừng hoạt động -> Hoạt động
+            } else {
+                throw new IllegalArgumentException("Không thể kích hoạt lại đợt giảm giá đã hết hạn.");
+            }
+        }
         dotGiamGiaRepository.save(dotGiamGia);
     }
 
@@ -55,9 +70,16 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
         dotGiamGia.setPhanTramGiam(request.getPhanTramGiam());
         dotGiamGia.setNgayBatDau(request.getNgayBatDau());
         dotGiamGia.setNgayKetThuc(request.getNgayKetThuc());
-        dotGiamGia.setTrangThai(1); // Mặc định là hoạt động khi mới tạo
+        
+        LocalDateTime now = LocalDateTime.now();
+        if (request.getNgayKetThuc().isBefore(now)) {
+            dotGiamGia.setTrangThai(0); // Đã kết thúc / Hết hạn
+        } else {
+            dotGiamGia.setTrangThai(1); // Hoạt động
+        }
 
         DotGiamGia savedDotGiamGia = dotGiamGiaRepository.save(dotGiamGia);
+
 
         // Bước 3, 4, 5: Áp dụng cho các biến thể sản phẩm
         List<Long> idList = request.getDanhSachIdChiTietSanPham();
@@ -75,9 +97,14 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
     }
 
     @Override
+    @Transactional
     public DotGiamGiaResponseDTO getDotGiamGiaById(Long id) {
+        LocalDateTime now = LocalDateTime.now();
+        dotGiamGiaRepository.updateExpiredStatus(now);
+
         DotGiamGia dotGiamGia = dotGiamGiaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đợt giảm giá với id: " + id));
+
 
         List<Long> danhSachIdChiTietSanPham = chiTietSanPhamRepository.findByDotGiamGia_Id(id)
                 .stream()
@@ -108,14 +135,30 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
         DotGiamGia dotGiamGia = dotGiamGiaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy đợt giảm giá với id: " + id));
 
+        LocalDateTime now = LocalDateTime.now();
+        int calculatedStatus;
+        if (request.getNgayKetThuc().isBefore(now)) {
+            calculatedStatus = 0; // Đã kết thúc / Hết hạn
+        } else {
+            // Nếu ngày kết thúc ở tương lai
+            if (dotGiamGia.getNgayKetThuc() != null && dotGiamGia.getNgayKetThuc().isBefore(now)) {
+                // Nếu trước đó đã hết hạn (endDate cũ ở quá khứ), nay được sửa ngày kết thúc sang tương lai -> kích hoạt lại
+                calculatedStatus = 1;
+            } else {
+                // Giữ nguyên trạng thái cũ (người dùng có thể tắt thủ công)
+                calculatedStatus = request.getTrangThai();
+            }
+        }
+
         // Cập nhật thông tin cơ bản
         dotGiamGia.setTenDotGiamGia(request.getTenDotGiamGia());
         dotGiamGia.setPhanTramGiam(request.getPhanTramGiam());
         dotGiamGia.setNgayBatDau(request.getNgayBatDau());
         dotGiamGia.setNgayKetThuc(request.getNgayKetThuc());
-        dotGiamGia.setTrangThai(request.getTrangThai());
+        dotGiamGia.setTrangThai(calculatedStatus);
 
         DotGiamGia savedDotGiamGia = dotGiamGiaRepository.save(dotGiamGia);
+
 
         // Bước 1 (Gỡ bỏ): Tìm TẤT CẢ các chi_tiet_san_pham hiện đang có id_dot_giam_gia = ID này
         List<ChiTietSanPham> currentVariants = chiTietSanPhamRepository.findByDotGiamGia_Id(id);

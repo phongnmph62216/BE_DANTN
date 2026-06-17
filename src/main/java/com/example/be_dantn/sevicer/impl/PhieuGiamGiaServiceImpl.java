@@ -35,10 +35,17 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
     private final EmailService emailService;
 
     @Override
+    @Transactional
     public Page<PhieuGiamGiaResponseDTO> getByFilters(String keyword, Integer loaiGiam, LocalDateTime tuNgay, LocalDateTime denNgay, Integer trangThai, Pageable pageable) {
+        LocalDateTime now = LocalDateTime.now();
+        phieuGiamGiaRepository.updateExpiredStatus(now);
+        phieuGiamGiaRepository.updateActiveStatus(now);
+        phieuGiamGiaRepository.updateUpcomingStatus(now);
+        
         Page<PhieuGiamGia> phieuPage = phieuGiamGiaRepository.findByFilters(keyword, loaiGiam, tuNgay, denNgay, trangThai, pageable);
         return phieuPage.map(this::convertToDto);
     }
+
 
     @Override
     @Transactional
@@ -49,8 +56,13 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
         if (phieu.getTrangThai() == 1) {
             phieu.setTrangThai(2); // Đang diễn ra -> Kết thúc
         } else if (phieu.getTrangThai() == 2) {
-            if (phieu.getNgayKetThuc() != null && phieu.getNgayKetThuc().isAfter(LocalDateTime.now())) {
-                phieu.setTrangThai(1); // Kết thúc -> Đang diễn ra
+            LocalDateTime now = LocalDateTime.now();
+            if (phieu.getNgayKetThuc() != null && phieu.getNgayKetThuc().isAfter(now)) {
+                if (phieu.getNgayBatDau() != null && now.isBefore(phieu.getNgayBatDau())) {
+                    phieu.setTrangThai(0); // Sắp diễn ra
+                } else {
+                    phieu.setTrangThai(1); // Đang diễn ra
+                }
             } else {
                 throw new IllegalArgumentException("Không thể kích hoạt lại phiếu đã hết hạn.");
             }
@@ -86,7 +98,9 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
 
         // Xác định trạng thái ban đầu
         LocalDateTime now = LocalDateTime.now();
-        if (now.isBefore(request.getNgayBatDau())) {
+        if (request.getNgayKetThuc().isBefore(now)) {
+            phieuGiamGia.setTrangThai(2); // Đã kết thúc
+        } else if (now.isBefore(request.getNgayBatDau())) {
             phieuGiamGia.setTrangThai(0); // Sắp diễn ra
         } else {
             phieuGiamGia.setTrangThai(1); // Đang diễn ra
@@ -136,11 +150,18 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
     }
 
     @Override
+    @Transactional
     public PhieuGiamGiaResponseDTO getPhieuGiamGiaById(Long id) {
+        LocalDateTime now = LocalDateTime.now();
+        phieuGiamGiaRepository.updateExpiredStatus(now);
+        phieuGiamGiaRepository.updateActiveStatus(now);
+        phieuGiamGiaRepository.updateUpcomingStatus(now);
+
         PhieuGiamGia phieu = phieuGiamGiaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu giảm giá với id: " + id));
 
         PhieuGiamGiaResponseDTO dto = convertToDto(phieu);
+
 
         if (phieu.getKieuApDung() == 1) {
             List<Long> khachHangIds = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia_Id(id).stream()
@@ -166,6 +187,35 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
         PhieuGiamGia phieuGiamGia = phieuGiamGiaRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy phiếu giảm giá với id: " + id));
 
+        LocalDateTime now = LocalDateTime.now();
+        int calculatedStatus;
+        if (request.getNgayKetThuc().isBefore(now)) {
+            calculatedStatus = 2; // Đã kết thúc
+        } else {
+            // Nếu ngày kết thúc ở tương lai
+            if (phieuGiamGia.getNgayKetThuc() != null && phieuGiamGia.getNgayKetThuc().isBefore(now)) {
+                // Nếu trước đó đã hết hạn (endDate cũ ở quá khứ), nay được sửa ngày kết thúc sang tương lai -> kích hoạt lại
+                if (now.isBefore(request.getNgayBatDau())) {
+                    calculatedStatus = 0; // Sắp diễn ra
+                } else {
+                    calculatedStatus = 1; // Đang diễn ra
+                }
+            } else {
+                // Nếu trước đó đang hoạt động/sắp diễn ra, hoặc bị kết thúc thủ công nhưng ngày bắt đầu/kết thúc thay đổi
+                // Nếu ngày bắt đầu/kết thúc thay đổi, ta tính lại trạng thái
+                if (!phieuGiamGia.getNgayBatDau().equals(request.getNgayBatDau()) || !phieuGiamGia.getNgayKetThuc().equals(request.getNgayKetThuc())) {
+                    if (now.isBefore(request.getNgayBatDau())) {
+                        calculatedStatus = 0; // Sắp diễn ra
+                    } else {
+                        calculatedStatus = 1; // Đang diễn ra
+                    }
+                } else {
+                    // Giữ nguyên trạng thái cũ (người dùng có thể tắt thủ công)
+                    calculatedStatus = phieuGiamGia.getTrangThai();
+                }
+            }
+        }
+
         // Cập nhật thông tin cơ bản
         phieuGiamGia.setTenPhieuGiamGia(request.getTenPhieu());
         phieuGiamGia.setKieuApDung(request.getKieuApDung());
@@ -176,6 +226,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
         phieuGiamGia.setSoLuong(request.getSoLuong());
         phieuGiamGia.setNgayBatDau(request.getNgayBatDau());
         phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
+        phieuGiamGia.setTrangThai(calculatedStatus);
 
         PhieuGiamGia savedPhieu = phieuGiamGiaRepository.save(phieuGiamGia);
 

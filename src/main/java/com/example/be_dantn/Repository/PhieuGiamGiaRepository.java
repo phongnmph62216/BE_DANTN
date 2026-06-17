@@ -31,4 +31,39 @@ public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Long
             @Param("trangThai") Integer trangThai,
             Pageable pageable
     );
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("""
+            UPDATE PhieuGiamGia pgg
+            SET pgg.trangThai = 2
+            WHERE pgg.trangThai != 2
+              AND pgg.ngayKetThuc IS NOT NULL
+              AND pgg.ngayKetThuc < :now
+            """)
+    void updateExpiredStatus(@Param("now") LocalDateTime now);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("""
+            UPDATE PhieuGiamGia pgg
+            SET pgg.trangThai = 1
+            WHERE pgg.trangThai = 0
+              AND pgg.ngayBatDau IS NOT NULL
+              AND pgg.ngayBatDau <= :now
+              AND (pgg.ngayKetThuc IS NULL OR pgg.ngayKetThuc >= :now)
+            """)
+    void updateActiveStatus(@Param("now") LocalDateTime now);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("""
+            UPDATE PhieuGiamGia pgg
+            SET pgg.trangThai = 0
+            WHERE pgg.trangThai = 1
+              AND pgg.ngayBatDau IS NOT NULL
+              AND pgg.ngayBatDau > :now
+            """)
+    void updateUpcomingStatus(@Param("now") LocalDateTime now);
 }
+

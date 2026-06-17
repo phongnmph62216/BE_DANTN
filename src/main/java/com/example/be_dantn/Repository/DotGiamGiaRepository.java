@@ -1,7 +1,9 @@
 package com.example.be_dantn.Repository;
+// Trigger compile at 4:27 PM
 
 import com.example.be_dantn.Dto.Response.DotGiamGiaResponseDTO;
 import com.example.be_dantn.Entity.DotGiamGia;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,4 +40,16 @@ public interface DotGiamGiaRepository extends JpaRepository<DotGiamGia, Long> {
             @Param("denNgay") LocalDateTime denNgay,
             Pageable pageable
     );
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.transaction.annotation.Transactional
+    @Query("""
+            UPDATE DotGiamGia dgg
+            SET dgg.trangThai = 0
+            WHERE dgg.trangThai = 1
+              AND dgg.ngayKetThuc IS NOT NULL
+              AND dgg.ngayKetThuc < :now
+            """)
+    void updateExpiredStatus(@Param("now") LocalDateTime now);
 }
+
