@@ -189,3 +189,45 @@ This document outlines the RESTful API endpoints for managing the system's core 
 
 *   **GET /export-excel**
     *   **Description:** Xuất danh sách nhân viên ra file Excel.
+
+---
+
+## VIII. Quản Lý Hóa Đơn (Invoice Management)
+*   **Base URL:** `/api/v1/hoa-don`
+
+### Endpoints:
+*   **GET /**
+    *   **Description:** Lấy danh sách hóa đơn với bộ lọc động và phân trang.
+    *   **Query Parameters:**
+        *   `maHoaDon` (String): Tìm kiếm tương đối theo Mã hóa đơn, Tên khách hàng, hoặc SĐT khách hàng.
+        *   `tuNgay` (LocalDateTime): Lọc theo ngày tạo hóa đơn (từ ngày).
+        *   `denNgay` (LocalDateTime): Lọc theo ngày tạo hóa đơn (đến ngày).
+        *   `loaiDon` (Integer): Lọc theo loại đơn (0: Tại quầy, 1: Online/Giao hàng).
+        *   `trangThai` (Integer): Lọc theo trạng thái hóa đơn (0: Chưa xác nhận, 1: Đã xác nhận, 2: Chờ giao, 3: Đang giao, 4: Đã hoàn thành, 5: Đã hủy).
+        *   `page` (int): Trang hiện tại (mặc định: 0).
+        *   `size` (int): Số lượng bản ghi trên một trang (mặc định: 10).
+    *   **Response Data:** `Page<HoaDonResponseDTO>`
+
+*   **GET /export-excel**
+    *   **Description:** Xuất danh sách hóa đơn thỏa mãn điều kiện lọc ra file Excel.
+    *   **Query Parameters:** Tương tự như API lấy danh sách, nhưng không có `page` và `size`.
+    *   **Response:** `ResponseEntity<byte[]>` (File .xlsx).
+
+*   **GET /{id}**
+    *   **Description:** Lấy toàn bộ thông tin chi tiết của một hóa đơn để hiển thị ở màn hình Chi tiết hóa đơn.
+    *   **Response Data:** `HoaDonDetailResponseDTO` (Bao gồm nhiều khối thông tin: chung, khách hàng, tiền, sản phẩm, thanh toán, timeline).
+
+*   **PUT /{id}/trang-thai**
+    *   **Description:** Cập nhật trạng thái của một hóa đơn. API có logic để validate luồng chuyển trạng thái hợp lệ tùy theo loại đơn (Tại quầy / Online).
+    *   **Request Body:** 
+        ```json
+        {
+          "trangThaiMoi": 1,
+          "ghiChu": "Khách hàng đã xác nhận đơn hàng."
+        }
+        ```
+    *   **Response:** `ResponseObject<Void>`
+
+*   **GET /{id}/lich-su**
+    *   **Description:** Lấy danh sách lịch sử các thao tác đã thực hiện trên hóa đơn.
+    *   **Response Data:** `List<LichSuHoaDonResponseDTO>`

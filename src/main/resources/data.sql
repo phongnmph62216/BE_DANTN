@@ -187,3 +187,51 @@ BEGIN
     (2, 'NV003', N'Lê Văn Minh', '0933445566', 'minhlv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
     (2, 'NV004', N'Phạm Văn Đức', '0977889900', 'ducpv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '')
 END;
+
+-- Seed data for hoa_don
+IF NOT EXISTS (SELECT 1 FROM hoa_don)
+BEGIN
+    INSERT INTO hoa_don (id_nhan_vien, id_khach_hang, ma_hoa_don, loai_hoa_don, tong_tien_thanh_toan, ten_khach_hang, so_dien_thoai, trang_thai, ngay_tao) VALUES
+    (1, 1, 'HD001', 0, 700000.00, N'Nguyễn Văn An', '0987654321', 4, CURRENT_TIMESTAMP),
+    (2, 2, 'HD002', 1, 560000.00, N'Trần Thị Bình', '0912345678', 1, CURRENT_TIMESTAMP),
+    (3, NULL, 'HD003', 0, 350000.00, N'Khách lẻ', '0111222333', 0, CURRENT_TIMESTAMP),
+    (1, 4, 'HD004', 1, 1500000.00, N'Phạm Thị Dung', '0777888999', 2, CURRENT_TIMESTAMP),
+    (2, 1, 'HD005', 1, 280000.00, N'Nguyễn Văn An', '0987654321', 5, CURRENT_TIMESTAMP)
+END;
+
+-- Seed data for lich_su_hoa_don
+IF NOT EXISTS (SELECT 1 FROM lich_su_hoa_don)
+BEGIN
+    INSERT INTO lich_su_hoa_don (id_hoa_don, trang_thai, thoi_gian, ghi_chu, hanh_dong) VALUES
+    (1, 0, CURRENT_TIMESTAMP, N'Khởi tạo hóa đơn', N'Tạo hóa đơn'),
+    (1, 1, CURRENT_TIMESTAMP, N'Xác nhận thành công', N'Xác nhận đơn hàng'),
+    (1, 4, CURRENT_TIMESTAMP, N'Thanh toán tại quầy', N'Hoàn thành'),
+    (2, 0, CURRENT_TIMESTAMP, N'Khách đặt online', N'Tạo hóa đơn'),
+    (2, 1, CURRENT_TIMESTAMP, N'Đã liên hệ xác nhận', N'Xác nhận đơn hàng'),
+    (3, 0, CURRENT_TIMESTAMP, N'Tạo đơn tại quầy', N'Tạo hóa đơn'),
+    (4, 0, CURRENT_TIMESTAMP, N'Khách đặt online', N'Tạo hóa đơn'),
+    (4, 1, CURRENT_TIMESTAMP, N'Xác nhận đơn', N'Xác nhận đơn hàng'),
+    (4, 2, CURRENT_TIMESTAMP, N'Đóng gói xong, chờ shipper', N'Chuyển trạng thái'),
+    (5, 0, CURRENT_TIMESTAMP, N'Khách đặt online', N'Tạo hóa đơn'),
+    (5, 5, CURRENT_TIMESTAMP, N'Khách yêu cầu hủy', N'Hủy đơn')
+END;
+
+-- Seed data for hoa_don_chi_tiet
+IF NOT EXISTS (SELECT 1 FROM hoa_don_chi_tiet)
+BEGIN
+    INSERT INTO hoa_don_chi_tiet (id_hoa_don, id_chi_tiet_san_pham, so_luong, don_gia) VALUES
+    (1, 1, 2, 350000.00), -- 2 * 350k = 700k
+    (2, 5, 2, 280000.00), -- 2 * 280k = 560k
+    (3, 2, 1, 350000.00), -- 1 * 350k = 350k
+    (4, 1, 2, 350000.00), -- 2 * 350k = 700k
+    (4, 5, 2, 280000.00), -- 2 * 280k = 560k (Tổng: 1tr260k + ship/giamgia = 1tr500k)
+    (5, 6, 1, 280000.00)  -- 1 * 280k = 280k
+END;
+
+-- Seed data for thanh_toan
+IF NOT EXISTS (SELECT 1 FROM thanh_toan)
+BEGIN
+    INSERT INTO thanh_toan (id_hoa_don, phuong_thuc, so_tien, thoi_gian, nguoi_thuc_hien, ghi_chu) VALUES
+    (1, N'Tiền mặt', 700000.00, CURRENT_TIMESTAMP, N'Trần Tuấn Linh', N'Khách thanh toán đủ'),
+    (2, N'Chuyển khoản', 560000.00, CURRENT_TIMESTAMP, N'Hệ thống', N'Đã thanh toán VNPay')
+END;
