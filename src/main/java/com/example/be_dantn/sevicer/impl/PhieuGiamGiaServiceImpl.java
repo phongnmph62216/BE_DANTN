@@ -7,6 +7,7 @@ import com.example.be_dantn.Entity.KhachHang;
 import com.example.be_dantn.Entity.PhieuGiamGia;
 import com.example.be_dantn.Entity.PhieuGiamGiaKhachHang;
 import com.example.be_dantn.Exception.ResourceNotFoundException;
+import com.example.be_dantn.repository.HoaDonRepository;
 import com.example.be_dantn.Repository.KhachHangRepository;
 import com.example.be_dantn.Repository.PhieuGiamGiaKhachHangRepository;
 import com.example.be_dantn.Repository.PhieuGiamGiaRepository;
@@ -33,6 +34,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
     private final PhieuGiamGiaKhachHangRepository phieuGiamGiaKhachHangRepository;
     private final KhachHangRepository khachHangRepository;
     private final EmailService emailService;
+    private final HoaDonRepository hoaDonRepository;
 
     @Override
     @Transactional
@@ -274,6 +276,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
     }
 
     private PhieuGiamGiaResponseDTO convertToDto(PhieuGiamGia entity) {
+        int soLuongDaDung = hoaDonRepository.countUsedVouchers(entity.getId());
         return new PhieuGiamGiaResponseDTO(
                 entity.getId(),
                 entity.getMaPhieuGiamGia(),
@@ -283,7 +286,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
                 entity.getGiaGiamToiDa(),
                 entity.getDieuKienGiam(),
                 entity.getSoLuong(),
-                0, // Tạm thời hardcode soLuongDaDung = 0
+                soLuongDaDung,
                 entity.getKieuApDung(),
                 entity.getNgayBatDau(),
                 entity.getNgayKetThuc(),

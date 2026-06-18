@@ -214,8 +214,35 @@ This document outlines the RESTful API endpoints for managing the system's core 
     *   **Response:** `ResponseEntity<byte[]>` (File .xlsx).
 
 *   **GET /{id}**
-    *   **Description:** Lấy toàn bộ thông tin chi tiết của một hóa đơn để hiển thị ở màn hình Chi tiết hóa đơn.
-    *   **Response Data:** `HoaDonDetailResponseDTO` (Bao gồm nhiều khối thông tin: chung, khách hàng, tiền, sản phẩm, thanh toán, timeline).
+    *   **Description:** Lấy toàn bộ thông tin chi tiết của một hóa đơn. Dữ liệu trả về là một object phẳng để FE dễ dàng sử dụng.
+    *   **Response Data:** `HoaDonDetailResponseDTO`
+        ```json
+        {
+          "id": 2,
+          "maHoaDon": "HD002",
+          "ngayTao": "2024-07-29T10:00:00",
+          "nguoiTao": "Nguyễn Thị Hương",
+          "ngaySua": "2024-07-29T11:00:00",
+          "nguoiSua": "Nguyễn Thị Hương",
+          "trangThai": 1,
+          "loaiDon": 1,
+          "ghiChu": "Giao hàng nhanh",
+          "tenKhachHang": "Trần Thị Bình",
+          "soDienThoai": "0912345678",
+          "email": "binh.tran@example.com",
+          "diaChi": "456 Lê Lợi, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh",
+          "tongTienHang": 560000.00,
+          "giamGia": 20000.00,
+          "phiVanChuyen": 30000.00,
+          "tongTien": 570000.00,
+          "idPhieuGiamGia": 2,
+          "maPhieuGiamGia": "PGG_GIAM20K",
+          "tenPhieuGiamGia": "Giảm ngay 20K",
+          "danhSachSanPham": [ ... ],
+          "lichSuThanhToan": [ ... ],
+          "timelineTrangThai": [ ... ]
+        }
+        ```
 
 *   **PUT /{id}/trang-thai**
     *   **Description:** Cập nhật trạng thái của một hóa đơn. API có logic để validate luồng chuyển trạng thái hợp lệ tùy theo loại đơn (Tại quầy / Online).
@@ -231,3 +258,47 @@ This document outlines the RESTful API endpoints for managing the system's core 
 *   **GET /{id}/lich-su**
     *   **Description:** Lấy danh sách lịch sử các thao tác đã thực hiện trên hóa đơn.
     *   **Response Data:** `List<LichSuHoaDonResponseDTO>`
+
+---
+
+## IX. Bán Hàng Tại Quầy (POS)
+*   **Base URL:** `/api/v1/ban-hang`
+
+### Endpoints:
+*   **POST /tao-don**
+    *   **Description:** Tạo một hóa đơn chờ mới (tương ứng một tab mới trên giao diện POS). Hóa đơn được tạo có `trang_thai` = 0 (Chờ thanh toán) và `loai_hoa_don` = 0 (Tại quầy).
+    *   **Response Data:** `HoaDonResponseDTO` (Chứa `id` và `maHoaDon` để sử dụng cho các thao tác tiếp theo).
+
+*   **PUT /{idHoaDon}/thong-tin-nhan-hang**
+    *   **Description:** Cập nhật thông tin khách hàng và hình thức nhận hàng cho một hóa đơn chờ.
+    *   **Request Body:** `ThongTinNhanHangRequestDTO`
+        ```json
+        {
+          "idKhachHang": 1,
+          "isGiaoHang": true,
+          "tenNguoiNhan": "Nguyễn Văn An",
+          "sdtNguoiNhan": "0987654321",
+          "diaChiChiTiet": "Số 123, Đường Giải Phóng, Hà Nội",
+          "phiVanChuyen": 30000.00
+        }
+        ```
+    *   **Response:** `ResponseObject<Void>`
+
+*   **POST /{idHoaDon}/thanh-toan**
+    *   **Description:** API quan trọng nhất để chốt đơn và thanh toán. Thực hiện trong một transaction để đảm bảo toàn vẹn dữ liệu.
+    *   **Request Body:** `ThanhToanRequestDTO`
+        ```json
+        {
+          "tienMat": 500000.00,
+          "tienChuyenKhoan": 70000.00,
+          "ghiChu": "Khách trả đủ"
+        }
+        ```
+    *   **Logic:**
+        1.  Validate hóa đơn (trạng thái, sản phẩm, tổng tiền).
+        2.  Validate số tiền khách trả >= tổng tiền hóa đơn.
+        3.  Ghi nhận các dòng thanh toán vào bảng `thanh_toan`.
+        4.  Trừ số lượng phiếu giảm giá (nếu có).
+        5.  Cập nhật trạng thái hóa đơn (Tại quầy -> Hoàn thành; Giao hàng -> Chờ giao).
+        6.  Ghi lịch sử thao tác.
+    *   **Response:** `ResponseObject<Long>` (Trả về ID hóa đơn đã chốt).

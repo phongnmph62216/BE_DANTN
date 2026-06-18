@@ -14,33 +14,36 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class HoaDonDetailResponseDTO {
-    // Khối 1: Thông tin chung
+    // Thông tin cơ bản
+    private Long id;
     private String maHoaDon;
     private LocalDateTime ngayTao;
-    private String nhanVienTao;
-    private String nhanVienCapNhat;
+    private String nguoiTao;
+    private LocalDateTime ngaySua;
+    private String nguoiSua;
     private Integer trangThai;
-
-    // Khối 2: Khách hàng & Giao hàng
-    private String tenKhachHang;
-    private String sdtKhachHang;
-    private String emailKhachHang;
-    private String diaChiGiaoHang;
     private Integer loaiDon;
     private String ghiChu;
 
-    // Khối 3: Thống kê tiền
+    // Thông tin khách hàng
+    private String tenKhachHang;
+    private String soDienThoai;
+    private String email;
+    private String diaChi;
+
+    // Thông tin tài chính
     private BigDecimal tongTienHang;
     private BigDecimal giamGia;
     private BigDecimal phiVanChuyen;
-    private BigDecimal tongTienThanhToan;
+    private BigDecimal tongTien;
 
-    // Khối 4: Danh sách sản phẩm
+    // Thông tin phiếu giảm giá
+    private Long idPhieuGiamGia;
+    private String maPhieuGiamGia;
+    private String tenPhieuGiamGia;
+
+    // Các danh sách liên quan
     private List<HoaDonChiTietDTO> danhSachSanPham;
-
-    // Khối 5: Lịch sử thanh toán
     private List<ThanhToanDTO> lichSuThanhToan;
-
-    // Khối 6: Timeline trạng thái
     private List<LichSuHoaDonDTO> timelineTrangThai;
 }

@@ -6,14 +6,14 @@ import com.example.be_dantn.Dto.Response.HoaDonDetailResponseDTO;
 import com.example.be_dantn.Dto.Response.LichSuHoaDonDTO;
 import com.example.be_dantn.Dto.Response.LichSuHoaDonResponseDTO;
 import com.example.be_dantn.Dto.Response.ThanhToanDTO;
-import com.example.be_dantn.Entity.DiaChi;
 import com.example.be_dantn.Entity.HoaDon;
-import com.example.be_dantn.Entity.KhachHang;
 import com.example.be_dantn.Entity.LichSuHoaDon;
 import com.example.be_dantn.Entity.NhanVien;
+import com.example.be_dantn.Entity.ChiTietSanPham;
+import com.example.be_dantn.Entity.HoaDonChiTiet;
 import com.example.be_dantn.exception.BadRequestException;
-import com.example.be_dantn.Repository.*;
 import com.example.be_dantn.Repository.NhanVienRepository;
+import com.example.be_dantn.Repository.ChiTietSanPhamRepository;
 import com.example.be_dantn.sevicer.HoaDonService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -29,12 +29,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -53,7 +51,10 @@ public class HoaDonServiceImpl implements HoaDonService {
     private com.example.be_dantn.repository.LichSuHoaDonRepository lichSuHoaDonRepository;
     
     @Autowired
-    private NhanVienRepository nhanVienRepository; // Giả sử bạn có NhanVienRepository
+    private NhanVienRepository nhanVienRepository;
+
+    @Autowired
+    private ChiTietSanPhamRepository chiTietSanPhamRepository;
 
     @Override
     public Page<HoaDonResponseDTO> layDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, Integer trangThai, int page, int size) {
@@ -106,49 +107,50 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         List<HoaDonChiTietDTO> danhSachSanPham = hoaDonChiTietRepository.findByIdHoaDon(id);
         List<ThanhToanDTO> lichSuThanhToan = thanhToanRepository.findByIdHoaDon(id);
-        List<LichSuHoaDonResponseDTO> timelineTrangThai = lichSuHoaDonRepository.findByIdHoaDon(id);
+        List<LichSuHoaDonResponseDTO> timelineTrangThaiFull = lichSuHoaDonRepository.findByIdHoaDon(id);
         
-        List<LichSuHoaDonDTO> simplifiedTimeline = timelineTrangThai.stream()
+        List<LichSuHoaDonDTO> timelineTrangThai = timelineTrangThaiFull.stream()
             .map(l -> new LichSuHoaDonDTO(l.getTrangThai(), l.getThoiGian(), l.getGhiChu()))
             .collect(Collectors.toList());
 
-        BigDecimal tongTienHang = danhSachSanPham.stream()
-                .map(HoaDonChiTietDTO::getThanhTien)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        String nguoiTao = (hoaDon.getNhanVien() != null) ? hoaDon.getNhanVien().getHoVaTen() : "";
+        String email = (hoaDon.getKhachHang() != null) ? hoaDon.getKhachHang().getEmail() : "";
+        String diaChi = hoaDon.getDiaChiKhachHang();
 
-        String diaChiGiaoHang = Optional.ofNullable(hoaDon.getKhachHang())
-                .map(KhachHang::getDanhSachDiaChi)
-                .flatMap(list -> list.stream().filter(DiaChi::getKieuDiaChiLaMacDinh).findFirst())
-                .map(DiaChi::toString) // Hoặc một phương thức format địa chỉ đẹp hơn
-                .orElse(null);
-
-        return HoaDonDetailResponseDTO.builder()
+        HoaDonDetailResponseDTO.HoaDonDetailResponseDTOBuilder builder = HoaDonDetailResponseDTO.builder()
+                .id(hoaDon.getId())
                 .maHoaDon(hoaDon.getMaHoaDon())
                 .ngayTao(hoaDon.getNgayTao())
-                .nhanVienTao(hoaDon.getNhanVien() != null ? hoaDon.getNhanVien().getHoVaTen() : "N/A")
-                .nhanVienCapNhat(null) // Cần logic để lấy nhân viên cập nhật gần nhất
+                .nguoiTao(nguoiTao)
+                .ngaySua(hoaDon.getNgaySua())
+                .nguoiSua(hoaDon.getNguoiSua())
                 .trangThai(hoaDon.getTrangThai())
                 .tenKhachHang(hoaDon.getTenKhachHang())
-                .sdtKhachHang(hoaDon.getSoDienThoai())
-                .emailKhachHang(hoaDon.getKhachHang() != null ? hoaDon.getKhachHang().getEmail() : null)
-                .diaChiGiaoHang(diaChiGiaoHang)
+                .soDienThoai(hoaDon.getSoDienThoai())
+                .email(email)
+                .diaChi(diaChi)
                 .loaiDon(hoaDon.getLoaiHoaDon())
-                .ghiChu(null) // Cần logic để lấy ghi chú
-                .tongTienHang(tongTienHang)
-                .giamGia(BigDecimal.ZERO) // Cần logic tính giảm giá
-                .phiVanChuyen(BigDecimal.ZERO) // Cần logic phí vận chuyển
-                .tongTienThanhToan(hoaDon.getTongTienThanhToan())
+                .ghiChu(hoaDon.getGhiChu())
+                .tongTienHang(hoaDon.getSoTienGoc())
+                .giamGia(hoaDon.getSoTienGiam())
+                .phiVanChuyen(hoaDon.getPhiVanChuyen())
+                .tongTien(hoaDon.getTongTienThanhToan())
                 .danhSachSanPham(danhSachSanPham)
                 .lichSuThanhToan(lichSuThanhToan)
-                .timelineTrangThai(simplifiedTimeline)
-                .build();
+                .timelineTrangThai(timelineTrangThai);
+
+        if (hoaDon.getPhieuGiamGia() != null) {
+            builder.idPhieuGiamGia(hoaDon.getPhieuGiamGia().getId());
+            builder.maPhieuGiamGia(hoaDon.getPhieuGiamGia().getMaPhieuGiamGia());
+            builder.tenPhieuGiamGia(hoaDon.getPhieuGiamGia().getTenPhieuGiamGia());
+        }
+
+        return builder.build();
     }
 
     @Override
     @Transactional
     public void capNhatTrangThaiHoaDon(Long id, Integer trangThaiMoi, String ghiChu) {
-        // Tạm thời lấy nhân viên đầu tiên trong DB để thực hiện hành động
-        // TRONG THỰC TẾ: Sẽ lấy từ SecurityContextHolder
         NhanVien nguoiThucHien = nhanVienRepository.findById(1L).orElse(null);
 
         HoaDon hoaDon = hoaDonRepository.findById(id)
@@ -157,11 +159,71 @@ public class HoaDonServiceImpl implements HoaDonService {
         Integer trangThaiCu = hoaDon.getTrangThai();
         validateTrangThai(hoaDon.getLoaiHoaDon(), trangThaiCu, trangThaiMoi);
 
+        // --- XỬ LÝ QUẢN LÝ TỒN KHO ---
+        // 1. Bán hàng Online: Trừ tồn kho khi đơn hàng chuyển từ Chưa xác nhận (0) -> Đã xác nhận (1)
+        if (hoaDon.getLoaiHoaDon() != null && hoaDon.getLoaiHoaDon() == 1 && trangThaiCu == 0 && trangThaiMoi == 1) {
+            if (hoaDon.getDanhSachChiTiet() != null) {
+                for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                    ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                    if (ctsp != null) {
+                        int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                        int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                        if (soLuongTon < soLuongBan) {
+                            String tenSp = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : "Sản phẩm";
+                            String tenMs = ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "";
+                            String tenKt = ctsp.getKichThuoc() != null ? ctsp.getKichThuoc().getTenKichThuoc() : "";
+                            throw new BadRequestException(String.format("Sản phẩm %s (%s, %s) không đủ số lượng trong kho. Hiện tại còn %d sản phẩm.",
+                                    tenSp, tenMs, tenKt, soLuongTon));
+                        }
+                        ctsp.setSoLuongTon(soLuongTon - soLuongBan);
+                        chiTietSanPhamRepository.save(ctsp);
+                    }
+                }
+            }
+        }
+
+        // 2. Hoàn trả tồn kho khi Hủy đơn hàng (trangThaiMoi == 5)
+        if (trangThaiMoi == 5) {
+            if (hoaDon.getLoaiHoaDon() != null) {
+                if (hoaDon.getLoaiHoaDon() == 0) {
+                    // Offline/Tại quầy: luôn trả lại kho vì tồn kho đã bị trừ lúc thêm vào giỏ hàng
+                    if (hoaDon.getDanhSachChiTiet() != null) {
+                        for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                            ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                            if (ctsp != null) {
+                                int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                                int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                                ctsp.setSoLuongTon(soLuongTon + soLuongBan);
+                                chiTietSanPhamRepository.save(ctsp);
+                            }
+                        }
+                    }
+                } else if (hoaDon.getLoaiHoaDon() == 1) {
+                    // Online: chỉ trả lại kho nếu đơn hàng đã từng được xác nhận (trangThaiCu >= 1 && trangThaiCu <= 4)
+                    if (trangThaiCu >= 1 && trangThaiCu <= 4) {
+                        if (hoaDon.getDanhSachChiTiet() != null) {
+                            for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                                ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                                if (ctsp != null) {
+                                    int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                                    int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                                    ctsp.setSoLuongTon(soLuongTon + soLuongBan);
+                                    chiTietSanPhamRepository.save(ctsp);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // -----------------------------
+
         hoaDon.setTrangThai(trangThaiMoi);
+        hoaDon.setNguoiSua(nguoiThucHien != null ? nguoiThucHien.getHoVaTen() : "Hệ thống");
 
         LichSuHoaDon lichSu = LichSuHoaDon.builder()
                 .hoaDon(hoaDon)
-                .nhanVien(nguoiThucHien) // Gán nhân viên thực hiện
+                .nhanVien(nguoiThucHien)
                 .trangThai(trangThaiMoi)
                 .ghiChu(ghiChu)
                 .hanhDong(String.format("Cập nhật trạng thái đơn hàng - Phần thay đổi: Trạng thái đơn hàng - Từ: %s - Thành: %s",

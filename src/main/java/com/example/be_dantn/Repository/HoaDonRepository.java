@@ -75,4 +75,9 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
             @Param("loaiDon") Integer loaiDon,
             @Param("trangThai") Integer trangThai
     );
+
+    @Query("SELECT COUNT(h) FROM HoaDon h WHERE h.phieuGiamGia.id = :phieuGiamGiaId AND h.trangThai <> 5")
+    int countUsedVouchers(@Param("phieuGiamGiaId") Long phieuGiamGiaId);
+
+    List<HoaDon> findByTrangThaiOrderByNgayTaoDesc(Integer trangThai);
 }
