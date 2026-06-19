@@ -4,6 +4,9 @@ import com.example.be_dantn.Dto.HoaDonResponseDTO;
 import com.example.be_dantn.Dto.DonHangChoResponseDTO;
 import com.example.be_dantn.Dto.Request.ThanhToanRequestDTO;
 import com.example.be_dantn.Dto.Request.ThongTinNhanHangRequestDTO;
+import com.example.be_dantn.Dto.Request.ThemSanPhamRequest;
+import com.example.be_dantn.Dto.Request.CapNhatSoLuongRequest;
+import com.example.be_dantn.Dto.Request.ApDungVoucherRequest;
 import com.example.be_dantn.Dto.ResponseObject;
 import com.example.be_dantn.sevicer.BanHangService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,5 +47,55 @@ public class BanHangController {
             @RequestBody ThanhToanRequestDTO request) {
         Long finalId = banHangService.thanhToanHoaDon(idHoaDon, request);
         return ResponseEntity.ok(new ResponseObject<>("success", "Thanh toán và chốt đơn thành công", finalId));
+    }
+
+    @GetMapping("/don-hang/{orderId}")
+    public ResponseEntity<ResponseObject<Object>> layChiTietDonHang(@PathVariable Long orderId) {
+        Object data = banHangService.layChiTietDonHang(orderId);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Lấy chi tiết đơn hàng thành công", data));
+    }
+
+    @PutMapping("/don-hang/{idHoaDon}/khach-hang")
+    public ResponseEntity<ResponseObject<Void>> capNhatKhachHang(
+            @PathVariable Long idHoaDon,
+            @RequestParam(required = false) Long idKhachHang) {
+        banHangService.capNhatKhachHang(idHoaDon, idKhachHang);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Cập nhật khách hàng thành công", null));
+    }
+
+    @PostMapping("/don-hang/{idHoaDon}/them-san-pham")
+    public ResponseEntity<ResponseObject<Void>> themSanPham(
+            @PathVariable Long idHoaDon,
+            @RequestBody ThemSanPhamRequest request) {
+        banHangService.themSanPhamVaoHoaDon(idHoaDon, request.getIdChiTietSanPham(), request.getSoLuong());
+        return ResponseEntity.ok(new ResponseObject<>("success", "Thêm sản phẩm thành công", null));
+    }
+
+    @PutMapping("/chi-tiet/{idHoaDonChiTiet}")
+    public ResponseEntity<ResponseObject<Void>> capNhatSoLuong(
+            @PathVariable Long idHoaDonChiTiet,
+            @RequestBody CapNhatSoLuongRequest request) {
+        banHangService.capNhatSoLuongSanPham(idHoaDonChiTiet, request.getSoLuong());
+        return ResponseEntity.ok(new ResponseObject<>("success", "Cập nhật số lượng thành công", null));
+    }
+
+    @DeleteMapping("/chi-tiet/{idHoaDonChiTiet}")
+    public ResponseEntity<ResponseObject<Void>> xoaSanPham(@PathVariable Long idHoaDonChiTiet) {
+        banHangService.xoaSanPhamKhoiHoaDon(idHoaDonChiTiet);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Xóa sản phẩm thành công", null));
+    }
+
+    @PostMapping("/don-hang/{idHoaDon}/voucher")
+    public ResponseEntity<ResponseObject<Void>> apDungVoucher(
+            @PathVariable Long idHoaDon,
+            @RequestBody ApDungVoucherRequest request) {
+        banHangService.apDungVoucher(idHoaDon, request.getMaPhieuGiamGia());
+        return ResponseEntity.ok(new ResponseObject<>("success", "Áp dụng voucher thành công", null));
+    }
+
+    @DeleteMapping("/don-hang/{idHoaDon}/voucher")
+    public ResponseEntity<ResponseObject<Void>> xoaVoucher(@PathVariable Long idHoaDon) {
+        banHangService.xoaVoucher(idHoaDon);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Gỡ bỏ voucher thành công", null));
     }
 }

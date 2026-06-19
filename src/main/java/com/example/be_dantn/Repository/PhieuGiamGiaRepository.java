@@ -13,6 +13,8 @@ import java.time.LocalDateTime;
 @Repository
 public interface PhieuGiamGiaRepository extends JpaRepository<PhieuGiamGia, Long> {
 
+    java.util.Optional<PhieuGiamGia> findByMaPhieuGiamGia(String maPhieuGiamGia);
+
     @Query("""
             SELECT pgg FROM PhieuGiamGia pgg
             WHERE

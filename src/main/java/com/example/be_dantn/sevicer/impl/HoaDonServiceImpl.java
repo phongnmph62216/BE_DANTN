@@ -241,8 +241,8 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     private void validateTrangThai(Integer loaiDon, Integer trangThaiCu, Integer trangThaiMoi) {
         if (loaiDon == 0) { // Tại quầy
-            if (!(trangThaiCu == 0 && trangThaiMoi == 4)) {
-                throw new BadRequestException("Đơn tại quầy chỉ có thể chuyển từ 'Chưa xác nhận' sang 'Đã hoàn thành'.");
+            if (!(trangThaiCu == 0 && (trangThaiMoi == 4 || trangThaiMoi == 5))) {
+                throw new BadRequestException("Đơn tại quầy chỉ có thể chuyển từ 'Chưa xác nhận' sang 'Đã hoàn thành' hoặc 'Đã hủy'.");
             }
         } else { // Online
             Map<Integer, Integer> nextStateMap = Map.of(

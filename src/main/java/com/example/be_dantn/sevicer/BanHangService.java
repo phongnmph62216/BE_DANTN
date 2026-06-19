@@ -11,4 +11,11 @@ public interface BanHangService {
     void capNhatThongTinNhanHang(Long idHoaDon, ThongTinNhanHangRequestDTO request);
     Long thanhToanHoaDon(Long idHoaDon, ThanhToanRequestDTO request);
     List<DonHangChoResponseDTO> layDanhSachDonHangCho();
+    Object layChiTietDonHang(Long orderId);
+    void capNhatKhachHang(Long idHoaDon, Long idKhachHang);
+    void themSanPhamVaoHoaDon(Long idHoaDon, Long idChiTietSanPham, Integer soLuong);
+    void capNhatSoLuongSanPham(Long idHoaDonChiTiet, Integer soLuong);
+    void xoaSanPhamKhoiHoaDon(Long idHoaDonChiTiet);
+    void apDungVoucher(Long idHoaDon, String maPhieuGiamGia);
+    void xoaVoucher(Long idHoaDon);
 }
