@@ -157,7 +157,7 @@ public class BanHangServiceImpl implements BanHangService {
         if (hoaDon.getLoaiHoaDon() == 0) { // Tại quầy
             hoaDon.setTrangThai(4); // Đã hoàn thành
         } else { // Giao hàng
-            hoaDon.setTrangThai(2); // Chờ giao
+            hoaDon.setTrangThai(1); // Đã xác nhận
         }
         hoaDon.setNgayThanhToan(LocalDateTime.now());
         hoaDon.setNguoiSua(nguoiThucHien != null ? nguoiThucHien.getHoVaTen() : "Hệ thống");

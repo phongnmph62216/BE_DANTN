@@ -277,6 +277,12 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
 
     private PhieuGiamGiaResponseDTO convertToDto(PhieuGiamGia entity) {
         int soLuongDaDung = hoaDonRepository.countUsedVouchers(entity.getId());
+        List<Long> khachHangIds = null;
+        if (entity.getKieuApDung() != null && entity.getKieuApDung() == 1) {
+            khachHangIds = phieuGiamGiaKhachHangRepository.findByPhieuGiamGia_Id(entity.getId()).stream()
+                    .map(pggkh -> pggkh.getKhachHang().getId())
+                    .collect(Collectors.toList());
+        }
         return new PhieuGiamGiaResponseDTO(
                 entity.getId(),
                 entity.getMaPhieuGiamGia(),
@@ -291,7 +297,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
                 entity.getNgayBatDau(),
                 entity.getNgayKetThuc(),
                 entity.getTrangThai(),
-                null // Mặc định là null, chỉ set khi get detail
+                khachHangIds
         );
     }
 }
