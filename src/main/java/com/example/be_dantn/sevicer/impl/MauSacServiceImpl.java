@@ -25,6 +25,7 @@ public class MauSacServiceImpl implements MauSacService {
     private static final String MA_PREFIX = "TTMS";
 
     private final MauSacRepository mauSacRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<MauSacDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class MauSacServiceImpl implements MauSacService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (mauSacRepository.existsByMaMauSac(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("mau_sac", "ma_mau_sac", "MS");
     }
 
     private String resolveNguoi(String nguoi) {

@@ -31,6 +31,7 @@ public class SanPhamServiceImpl implements SanPhamService {
     private final SanPhamRepository sanPhamRepository;
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
     private final EntityManager entityManager;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<SanPhamResponse> getSanPhamByFilter(String keyword, Long idThuongHieu, Long idChatLieu, Integer trangThai, Pageable pageable) {
@@ -43,7 +44,7 @@ public class SanPhamServiceImpl implements SanPhamService {
         // Step 1: Handle maSanPham
         String maSanPham = request.getMaSanPham();
         if (!StringUtils.hasText(maSanPham)) {
-            maSanPham = "SP" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+            maSanPham = codeGenerator.generateCode("san_pham", "ma_san_pham", "SP");
         } else {
             if (sanPhamRepository.existsByMaSanPham(maSanPham)) {
                 throw new RuntimeException("Mã sản phẩm " + maSanPham + " đã tồn tại.");

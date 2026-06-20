@@ -25,6 +25,7 @@ public class VaiAoServiceImpl implements VaiAoService {
     private static final String MA_PREFIX = "TTVA";
 
     private final VaiAoRepository vaiAoRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<VaiAoDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class VaiAoServiceImpl implements VaiAoService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (vaiAoRepository.existsByMaVaiAo(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("vai_ao", "ma_vai_ao", "VA");
     }
 
     private String resolveNguoi(String nguoi) {

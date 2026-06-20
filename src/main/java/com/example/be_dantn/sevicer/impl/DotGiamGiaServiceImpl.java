@@ -27,6 +27,7 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
 
     private final DotGiamGiaRepository dotGiamGiaRepository;
     private final ChiTietSanPhamRepository chiTietSanPhamRepository; // Bổ sung
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     @Transactional
@@ -65,7 +66,7 @@ public class DotGiamGiaServiceImpl implements DotGiamGiaService {
 
         // Bước 2: Tạo và lưu DotGiamGia
         DotGiamGia dotGiamGia = new DotGiamGia();
-        dotGiamGia.setMaDotGiamGia("DGG" + System.currentTimeMillis()); // Generate mã
+        dotGiamGia.setMaDotGiamGia(codeGenerator.generateCode("dot_giam_gia", "ma_dot_giam_gia", "DGG")); // Generate mã
         dotGiamGia.setTenDotGiamGia(request.getTenDotGiamGia());
         dotGiamGia.setPhanTramGiam(request.getPhanTramGiam());
         dotGiamGia.setNgayBatDau(request.getNgayBatDau());

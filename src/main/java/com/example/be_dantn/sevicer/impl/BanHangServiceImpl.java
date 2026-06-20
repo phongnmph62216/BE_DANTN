@@ -30,6 +30,7 @@ public class BanHangServiceImpl implements BanHangService {
     @Autowired private com.example.be_dantn.repository.LichSuHoaDonRepository lichSuHoaDonRepository;
     @Autowired private com.example.be_dantn.repository.HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired private ChiTietSanPhamRepository chiTietSanPhamRepository;
+    @Autowired private com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     @Transactional
@@ -38,7 +39,7 @@ public class BanHangServiceImpl implements BanHangService {
         NhanVien nguoiTao = nhanVienRepository.findById(1L).orElse(null);
 
         HoaDon hoaDon = new HoaDon();
-        hoaDon.setMaHoaDon("HD" + System.currentTimeMillis());
+        hoaDon.setMaHoaDon(codeGenerator.generateCode("hoa_don", "ma_hoa_don", "HD"));
         hoaDon.setTrangThai(0); // Trạng thái "Chờ thanh toán"
         hoaDon.setLoaiHoaDon(0); // Mặc định là "Tại quầy"
         hoaDon.setNhanVien(nguoiTao);

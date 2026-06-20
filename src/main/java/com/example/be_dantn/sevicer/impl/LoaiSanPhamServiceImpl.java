@@ -25,6 +25,7 @@ public class LoaiSanPhamServiceImpl implements LoaiSanPhamService {
     private static final String MA_PREFIX = "TTLSP";
 
     private final LoaiSanPhamRepository loaiSanPhamRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<LoaiSanPhamDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class LoaiSanPhamServiceImpl implements LoaiSanPhamService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (loaiSanPhamRepository.existsByMaLoaiSanPham(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("loai_san_pham", "ma_loai_san_pham", "LSP");
     }
 
     private String resolveNguoi(String nguoi) {

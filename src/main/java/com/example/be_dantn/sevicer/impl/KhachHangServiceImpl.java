@@ -27,6 +27,7 @@ public class KhachHangServiceImpl implements KhachHangService {
 
     private final KhachHangRepository khachHangRepository;
     private final DiaChiRepository diaChiRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<KhachHangResponseDTO> getByFilters(String keyword, Integer gioiTinh, Integer trangThai, Pageable pageable) {
@@ -49,7 +50,11 @@ public class KhachHangServiceImpl implements KhachHangService {
     @Override
     public KhachHang createKhachHang(KhachHangRequest request) {
         KhachHang khachHang = new KhachHang();
-        khachHang.setMaKhachHang(request.getMaKhachHang());
+        String maKhachHang = request.getMaKhachHang();
+        if (!org.springframework.util.StringUtils.hasText(maKhachHang)) {
+            maKhachHang = codeGenerator.generateCode("khach_hang", "ma_khach_hang", "KH");
+        }
+        khachHang.setMaKhachHang(maKhachHang);
         khachHang.setHoTen(request.getHoTen());
         khachHang.setSdt(request.getSdt());
         khachHang.setEmail(request.getEmail());

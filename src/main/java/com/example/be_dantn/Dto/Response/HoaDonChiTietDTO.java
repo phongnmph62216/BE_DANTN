@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 @Builder
 public class HoaDonChiTietDTO {
     private Long idChiTietSanPham;
+    private String maChiTietSanPham;
     private String tenSanPham;
     private String anhSanPham;
     private String tenKichCo;

@@ -15,6 +15,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, Lo
     @Query("""
             SELECT new com.example.be_dantn.Dto.Response.HoaDonChiTietDTO(
                 ctsp.id,
+                ctsp.maChiTietSanPham,
                 sp.tenSanPham,
                 sp.hinhAnh,
                 kt.tenKichThuoc,

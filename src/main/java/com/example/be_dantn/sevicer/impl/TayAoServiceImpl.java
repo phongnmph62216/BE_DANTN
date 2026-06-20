@@ -25,6 +25,7 @@ public class TayAoServiceImpl implements TayAoService {
 	private static final String MA_PREFIX = "TTTA";
 
 	private final TayAoRepository tayAoRepository;
+	private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
 	@Override
 	public Page<TayAoDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class TayAoServiceImpl implements TayAoService {
 			}
 			return normalizedMa;
 		}
-
-		String generatedMa;
-		do {
-			generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-		} while (tayAoRepository.existsByMaTayAo(generatedMa));
-
-		return generatedMa;
+		return codeGenerator.generateCode("tay_ao", "ma_tay_ao", "TA");
 	}
 
 	private String resolveNguoi(String nguoi) {

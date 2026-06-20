@@ -35,6 +35,7 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
     private final KhachHangRepository khachHangRepository;
     private final EmailService emailService;
     private final HoaDonRepository hoaDonRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     @Transactional
@@ -87,7 +88,11 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
 
         // Bước 2: Map và lưu PhieuGiamGia
         PhieuGiamGia phieuGiamGia = new PhieuGiamGia();
-        phieuGiamGia.setMaPhieuGiamGia(request.getMaPhieu());
+        String maPhieu = request.getMaPhieu();
+        if (!org.springframework.util.StringUtils.hasText(maPhieu)) {
+            maPhieu = codeGenerator.generateCode("phieu_giam_gia", "ma_phieu_giam_gia", "PGG");
+        }
+        phieuGiamGia.setMaPhieuGiamGia(maPhieu);
         phieuGiamGia.setTenPhieuGiamGia(request.getTenPhieu());
         phieuGiamGia.setKieuApDung(request.getKieuApDung());
         phieuGiamGia.setLoaiGiam(request.getLoaiGiam());

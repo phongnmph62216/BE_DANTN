@@ -25,6 +25,7 @@ public class XuatSuServiceImpl implements XuatSuService {
     private static final String MA_PREFIX = "TTXX";
 
     private final XuatSuRepository xuatSuRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<XuatSuDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class XuatSuServiceImpl implements XuatSuService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (xuatSuRepository.existsByMaXuatSu(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("xuat_su", "ma_xuat_su", "XS");
     }
 
     private String resolveNguoi(String nguoi) {

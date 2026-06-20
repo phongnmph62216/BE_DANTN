@@ -25,6 +25,7 @@ public class KichThuocServiceImpl implements KichThuocService {
     private static final String MA_PREFIX = "TTKT";
 
     private final KichThuocRepository kichThuocRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<KichThuocDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class KichThuocServiceImpl implements KichThuocService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (kichThuocRepository.existsByMaKichThuoc(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("kich_thuoc", "ma_kich_thuoc", "KT");
     }
 
     private String resolveNguoi(String nguoi) {

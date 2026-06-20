@@ -25,6 +25,7 @@ public class ChatLieuServiceImpl implements ChatLieuService {
     private static final String MA_PREFIX = "TTCL";
 
     private final ChatLieuRepository chatLieuRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<ChatLieuDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class ChatLieuServiceImpl implements ChatLieuService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (chatLieuRepository.existsByMaChatLieu(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("chat_lieu", "ma_chat_lieu", "CL");
     }
 
     private String resolveNguoi(String nguoi) {

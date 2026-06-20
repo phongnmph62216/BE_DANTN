@@ -53,7 +53,12 @@ public class ChiTietSanPham {
             this.trangThai = 1; // Mặc định là đang bán
         }
         if (this.maChiTietSanPham == null || this.maChiTietSanPham.isEmpty()) {
-            this.maChiTietSanPham = "CTSP" + System.currentTimeMillis(); // Mã tự sinh cơ bản
+            try {
+                com.example.be_dantn.Config.CodeGenerator generator = com.example.be_dantn.Config.SpringContextUtils.getBean(com.example.be_dantn.Config.CodeGenerator.class);
+                this.maChiTietSanPham = generator.generateCode("chi_tiet_san_pham", "ma_chi_tiet_san_pham", "CTSP");
+            } catch (Exception e) {
+                this.maChiTietSanPham = "CTSP" + System.currentTimeMillis();
+            }
         }
     }
 

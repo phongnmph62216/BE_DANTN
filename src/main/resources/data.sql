@@ -1,3 +1,28 @@
+-- Clean existing data to prevent duplicate key constraint violations on dev restarts
+DELETE FROM thanh_toan;
+DELETE FROM hoa_don_chi_tiet;
+DELETE FROM lich_su_hoa_don;
+DELETE FROM hoa_don;
+DELETE FROM phieu_giam_gia_khach_hang;
+DELETE FROM dia_chi;
+DELETE FROM khach_hang;
+DELETE FROM phieu_giam_gia;
+DELETE FROM nhan_vien;
+DELETE FROM vai_tro;
+DELETE FROM chi_tiet_san_pham;
+DELETE FROM dot_giam_gia;
+DELETE FROM san_pham;
+DELETE FROM chat_lieu;
+DELETE FROM loai_san_pham;
+DELETE FROM thuong_hieu;
+DELETE FROM tay_ao;
+DELETE FROM vai_ao;
+DELETE FROM kieu_dang;
+DELETE FROM co_ao;
+DELETE FROM mau_sac;
+DELETE FROM kich_thuoc;
+DELETE FROM xuat_su;
+
 -- Seed data for chat_lieu
 INSERT INTO chat_lieu (ma_chat_lieu, ten_chat_lieu, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
 ('CL001', N'Cotton', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, NULL, NULL),

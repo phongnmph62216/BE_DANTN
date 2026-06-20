@@ -25,6 +25,7 @@ public class KieuDangServiceImpl implements KieuDangService {
     private static final String MA_PREFIX = "TTKD";
 
     private final KieuDangRepository kieuDangRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<KieuDangDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class KieuDangServiceImpl implements KieuDangService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (kieuDangRepository.existsByMaKieuDang(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("kieu_dang", "ma_kieu_dang", "KD");
     }
 
     private String resolveNguoi(String nguoi) {

@@ -35,6 +35,7 @@ public class NhanVienServiceImpl implements NhanVienService {
     private final VaiTroRepository vaiTroRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailService emailService;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<NhanVienResponseDTO> getByFilters(String keyword, Integer trangThai, Pageable pageable) {
@@ -152,7 +153,7 @@ public class NhanVienServiceImpl implements NhanVienService {
         nhanVien.setAnh(request.getAnh());
 
         // 3. Logic tự sinh dữ liệu mặc định
-        nhanVien.setMaNhanVien("NV" + System.currentTimeMillis());
+        nhanVien.setMaNhanVien(codeGenerator.generateCode("nhan_vien", "ma_nhan_vien", "NV"));
         nhanVien.setMatKhau(passwordEncoder.encode(request.getSoDienThoai())); // Mã hóa SĐT làm mật khẩu
         nhanVien.setTrangThai(1); // Đang làm
         nhanVien.setNgayVaoLam(LocalDate.now());

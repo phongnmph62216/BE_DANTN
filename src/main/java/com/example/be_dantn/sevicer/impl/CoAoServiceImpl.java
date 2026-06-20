@@ -25,6 +25,7 @@ public class CoAoServiceImpl implements CoAoService {
     private static final String MA_PREFIX = "TTCA";
 
     private final CoAoRepository coAoRepository;
+    private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
 
     @Override
     public Page<CoAoDTO> findAll(Pageable pageable, String keyword, Integer trangThai) {
@@ -127,13 +128,7 @@ public class CoAoServiceImpl implements CoAoService {
             }
             return normalizedMa;
         }
-
-        String generatedMa;
-        do {
-            generatedMa = MA_PREFIX + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
-        } while (coAoRepository.existsByMaCoAo(generatedMa));
-
-        return generatedMa;
+        return codeGenerator.generateCode("co_ao", "ma_co_ao", "CA");
     }
 
     private String resolveNguoi(String nguoi) {
