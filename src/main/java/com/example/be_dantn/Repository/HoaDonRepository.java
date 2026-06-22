@@ -11,9 +11,15 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
+
+    Optional<HoaDon> findByMaHoaDon(String maHoaDon);
+
+    @Query("SELECT h FROM HoaDon h WHERE h.maHoaDon = :maHoaDon AND (LOWER(h.email) = LOWER(:email) OR (h.khachHang IS NOT NULL AND LOWER(h.khachHang.email) = LOWER(:email)))")
+    Optional<HoaDon> findByMaHoaDonAndEmail(@Param("maHoaDon") String maHoaDon, @Param("email") String email);
 
     @Query("""
             SELECT new com.example.be_dantn.Dto.HoaDonResponseDTO(
@@ -80,4 +86,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
     int countUsedVouchers(@Param("phieuGiamGiaId") Long phieuGiamGiaId);
 
     List<HoaDon> findByTrangThaiOrderByNgayTaoDesc(Integer trangThai);
+
+    @Query("SELECT h FROM HoaDon h WHERE h.trangThai = :trangThai AND h.loaiHoaDon IN :loaiHoaDons ORDER BY h.ngayTao DESC")
+    List<HoaDon> findByTrangThaiAndLoaiHoaDonIn(@Param("trangThai") Integer trangThai, @Param("loaiHoaDons") List<Integer> loaiHoaDons);
 }

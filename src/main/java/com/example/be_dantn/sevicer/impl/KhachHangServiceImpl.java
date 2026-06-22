@@ -12,6 +12,7 @@ import com.example.be_dantn.Repository.DiaChiRepository;
 import com.example.be_dantn.Repository.KhachHangRepository;
 import com.example.be_dantn.sevicer.KhachHangService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class KhachHangServiceImpl implements KhachHangService {
     private final KhachHangRepository khachHangRepository;
     private final DiaChiRepository diaChiRepository;
     private final com.example.be_dantn.Config.CodeGenerator codeGenerator;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Page<KhachHangResponseDTO> getByFilters(String keyword, Integer gioiTinh, Integer trangThai, Pageable pageable) {
@@ -61,6 +63,12 @@ public class KhachHangServiceImpl implements KhachHangService {
         khachHang.setGioiTinh(request.getGioiTinh());
         khachHang.setNgaySinh(request.getNgaySinh());
         khachHang.setTrangThai(request.getTrangThai());
+        khachHang.setTenTaiKhoan(request.getSdt());
+        if (request.getMatKhau() != null && !request.getMatKhau().trim().isEmpty()) {
+            khachHang.setMatKhau(passwordEncoder.encode(request.getMatKhau().trim()));
+        } else {
+            khachHang.setMatKhau(passwordEncoder.encode("123456"));
+        }
         return khachHangRepository.save(khachHang);
     }
 
@@ -75,6 +83,9 @@ public class KhachHangServiceImpl implements KhachHangService {
         khachHang.setGioiTinh(request.getGioiTinh());
         khachHang.setNgaySinh(request.getNgaySinh());
         khachHang.setTrangThai(request.getTrangThai());
+        if (request.getMatKhau() != null && !request.getMatKhau().trim().isEmpty()) {
+            khachHang.setMatKhau(passwordEncoder.encode(request.getMatKhau().trim()));
+        }
 
         return khachHangRepository.save(khachHang);
     }

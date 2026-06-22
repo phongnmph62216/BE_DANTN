@@ -158,4 +158,92 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send employee account email to {}: {}", toEmail, e.getMessage());
         }
     }
+
+    @Override
+    @Async
+    public void sendOrderSuccessEmail(
+            String toEmail,
+            String customerName,
+            String orderCode,
+            String totalAmount,
+            String paymentMethod,
+            String listProductsHtml,
+            String trackingLink
+    ) {
+        if (toEmail == null || toEmail.trim().isEmpty() || !toEmail.contains("@")) {
+            log.warn("Invalid email address: {}. Skipping order success email delivery.", toEmail);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("[Bee Stylish] Xác Nhận Đơn Hàng Thành Công - " + orderCode);
+
+            String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; border-bottom: 2px solid #ef972d; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h2 style="color: #ef972d; margin: 0; font-size: 24px;">BEE STYLISH</h2>
+                        <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Cảm Ơn Bạn Đã Mua Sắm Tại Bee Stylish!</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <p style="font-size: 16px; color: #333; line-height: 1.5;">Chào <strong>%s</strong>,</p>
+                        <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                            Đơn hàng của bạn đã được đặt thành công trên hệ thống <strong>Bee Stylish</strong>. Dưới đây là thông tin chi tiết đơn hàng của bạn:
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: #fffaf0; border: 1px dashed #ef972d; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                        <div style="margin-bottom: 10px; font-size: 15px; color: #333;">
+                            <strong>Mã đơn hàng:</strong> <span style="color: #ef972d; font-weight: bold; font-size: 18px;">%s</span>
+                        </div>
+                        <div style="margin-bottom: 10px; font-size: 15px; color: #333;">
+                            <strong>Phương thức thanh toán:</strong> <span style="font-weight: bold;">%s</span>
+                        </div>
+                        <div style="font-size: 15px; color: #333;">
+                            <strong>Tổng thanh toán:</strong> <span style="color: #ef972d; font-weight: bold;">%s</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 16px;">DANH SÁCH SẢN PHẨM</h3>
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <thead>
+                                <tr style="background-color: #f9f9f9; text-align: left; font-weight: bold;">
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; width: 60%%;">Sản phẩm</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 15%%;">SL</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 25%%;">Đơn giá</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                %s
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+                        <a href="%s" style="background-color: #ef972d; color: #ffffff; text-decoration: none; padding: 12px 30px; font-size: 15px; font-weight: bold; border-radius: 5px; display: inline-block;">Tra cứu trạng thái đơn hàng</a>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; font-size: 12px; color: #999;">
+                        Nếu bạn có bất kỳ thắc mắc nào, vui lòng liên hệ với bộ phận hỗ trợ khách hàng của chúng tôi.<br/>
+                        &copy; 2026 Bee Stylish. All rights reserved.
+                    </div>
+                </div>
+                """.formatted(customerName, orderCode, paymentMethod, totalAmount, listProductsHtml, trackingLink);
+
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Order success email sent successfully to: {}", toEmail);
+
+        } catch (Exception e) {
+            log.error("Failed to send order success email to {}: {}", toEmail, e.getMessage());
+        }
+    }
 }
+

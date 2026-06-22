@@ -28,8 +28,9 @@ public class BanHangController {
     }
 
     @PostMapping("/tao-don")
-    public ResponseEntity<ResponseObject<HoaDonResponseDTO>> taoDonHangCho() {
-        HoaDonResponseDTO hoaDonMoi = banHangService.taoDonHangCho();
+    public ResponseEntity<ResponseObject<HoaDonResponseDTO>> taoDonHangCho(
+            @RequestParam(required = false, defaultValue = "0") Integer loaiHoaDon) {
+        HoaDonResponseDTO hoaDonMoi = banHangService.taoDonHangCho(loaiHoaDon);
         return ResponseEntity.ok(new ResponseObject<>("success", "Tạo đơn hàng chờ thành công", hoaDonMoi));
     }
 
@@ -97,5 +98,22 @@ public class BanHangController {
     public ResponseEntity<ResponseObject<Void>> xoaVoucher(@PathVariable Long idHoaDon) {
         banHangService.xoaVoucher(idHoaDon);
         return ResponseEntity.ok(new ResponseObject<>("success", "Gỡ bỏ voucher thành công", null));
+    }
+
+    @PostMapping("/don-hang/{orderId}/yeu-cau-huy")
+    public ResponseEntity<ResponseObject<Void>> yeuCauHuyDon(
+            @PathVariable Long orderId,
+            @RequestParam(required = false, defaultValue = "") String ghiChu) {
+        banHangService.yeuCauHuyDon(orderId, ghiChu);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Gửi yêu cầu hủy đơn thành công", null));
+    }
+
+    @PutMapping("/don-hang/{orderId}/phe-duyet-huy")
+    public ResponseEntity<ResponseObject<Void>> pheDuyetHuyDon(
+            @PathVariable Long orderId,
+            @RequestParam Boolean dongY,
+            @RequestParam(required = false, defaultValue = "") String ghiChu) {
+        banHangService.pheDuyetHuyDon(orderId, dongY, ghiChu);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Xử lý yêu cầu hủy đơn thành công", null));
     }
 }

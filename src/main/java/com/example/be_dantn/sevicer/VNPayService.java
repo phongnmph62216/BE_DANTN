@@ -33,7 +33,7 @@ public class VNPayService {
         vnpParams.put("vnp_TmnCode", vnPayConfig.getTmnCode());
         vnpParams.put("vnp_Amount", String.valueOf(amount * 100)); // VNPAY yêu cầu nhân 100
         vnpParams.put("vnp_CurrCode", "VND");
-        vnpParams.put("vnp_TxnRef", txnRef);
+        vnpParams.put("vnp_TxnRef", txnRef + "_" + System.currentTimeMillis());
         vnpParams.put("vnp_OrderInfo", orderInfo);
         vnpParams.put("vnp_OrderType", "other");
         vnpParams.put("vnp_Locale", "vn");

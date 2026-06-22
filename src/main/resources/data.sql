@@ -1,4 +1,5 @@
 -- Clean existing data to prevent duplicate key constraint violations on dev restarts
+DELETE FROM thong_bao;
 DELETE FROM thanh_toan;
 DELETE FROM hoa_don_chi_tiet;
 DELETE FROM lich_su_hoa_don;
@@ -127,11 +128,11 @@ INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id
 ('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);
 
 -- Seed data for khach_hang
-INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh, trang_thai, ngay_tao, ngay_sua) VALUES
-('KH001', N'Nguyễn Văn An', '0987654321', 'an.nguyen@example.com', 1, '1990-05-15', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('KH002', N'Trần Thị Bình', '0912345678', 'binh.tran@example.com', 0, '1995-08-20', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('KH003', N'Lê Văn Cường', '0333444555', 'cuong.le@example.com', 1, '1988-11-30', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-('KH004', N'Phạm Thị Dung', '0777888999', 'dung.pham@example.com', 0, '2001-02-10', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh, trang_thai, ngay_tao, ngay_sua, ten_tai_khoan, mat_khau) VALUES
+('KH001', N'Nguyễn Văn An', '0987657321', 'an.nguyen@example.com', 1, '1990-05-15', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0987654321', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
+('KH002', N'Trần Thị Bình', '0912345778', 'binh.tran@example.com', 0, '1995-08-20', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0912345678', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
+('KH003', N'Lê Văn Cường', '0333474555', 'cuong.le@example.com', 1, '1988-11-30', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0333444555', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
+('KH004', N'Phạm Thị Dung', '0777878999', 'dung.pham@example.com', 0, '2001-02-10', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0777888999', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW');
 
 -- Seed data for dia_chi
 INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
@@ -154,10 +155,10 @@ INSERT INTO vai_tro (ma, ten, trang_thai) VALUES
 
 -- Seed data for nhan_vien
 INSERT INTO nhan_vien (id_vai_tro, ma_nhan_vien, ho_va_ten, so_dien_thoai, email, mat_khau, cccd, gioi_tinh, ngay_sinh, dia_chi, trang_thai, ngay_vao_lam, ngay_tao, ngay_sua, anh) VALUES
-(1, 'NV001', N'Trần Tuấn Linh', '0987654321', 'linhtt@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765432', 1, '1995-04-12', N'123 Nguyễn Văn Linh, Quận 7, TP.HCM', 1, '2023-01-15', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
-(2, 'NV002', N'Nguyễn Thị Hương', '0912345678', 'huongnt@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765433', 0, '1998-05-12', N'45 Lê Lợi, Quận 1, TP.HCM', 1, '2023-03-20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
-(2, 'NV003', N'Lê Văn Minh', '0933445566', 'minhlv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
-(2, 'NV004', N'Phạm Văn Đức', '0977889900', 'ducpv@beestylish.com', '$2a$10$E5.s4.2sL8.rZu3.r8E3A.A.r8E3A.A.r8E3A.A.r8E3A.A', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
+(1, 'NV001', N'Trần Tuấn Linh', '0987657326', 'linhtt@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765432', 1, '1995-04-12', N'123 Nguyễn Văn Linh, Quận 7, TP.HCM', 1, '2023-01-15', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV002', N'Nguyễn Thị Hương', '0912745678', 'huongnt@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765433', 0, '1998-05-12', N'45 Lê Lợi, Quận 1, TP.HCM', 1, '2023-03-20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV003', N'Lê Văn Minh', '0933475566', 'minhlv@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
+(2, 'NV004', N'Phạm Văn Đức', '0978889900', 'ducpv@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
 
 -- Seed data for hoa_don
 INSERT INTO hoa_don (id_nhan_vien, id_khach_hang, id_phieu_giam_gia, ma_hoa_don, loai_hoa_don, so_tien_goc, so_tien_giam, phi_van_chuyen, tong_tien_thanh_toan, ten_khach_hang, dia_chi_khach_hang, so_dien_thoai, trang_thai, ngay_tao, ghi_chu) VALUES

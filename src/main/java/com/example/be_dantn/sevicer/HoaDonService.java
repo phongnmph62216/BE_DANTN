@@ -33,4 +33,6 @@ public interface HoaDonService {
     void capNhatTrangThaiHoaDon(Long id, Integer trangThaiMoi, String ghiChu);
 
     List<LichSuHoaDonResponseDTO> layLichSuHoaDon(Long id);
+
+    HoaDonDetailResponseDTO traCuuHoaDon(String maHoaDon, String email);
 }

@@ -1,5 +1,6 @@
 package com.example.be_dantn.sevicer.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import com.example.be_dantn.Dto.HoaDonResponseDTO;
 import com.example.be_dantn.Dto.Response.HoaDonChiTietDTO;
 import com.example.be_dantn.Dto.Response.HoaDonDetailResponseDTO;
@@ -55,6 +56,24 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     @Autowired
     private ChiTietSanPhamRepository chiTietSanPhamRepository;
+
+    @Autowired
+    private HttpServletRequest httpServletRequest;
+
+    private NhanVien getLoggedInEmployee() {
+        if (httpServletRequest != null) {
+            String empIdStr = httpServletRequest.getHeader("X-Employee-Id");
+            if (empIdStr != null && !empIdStr.trim().isEmpty()) {
+                try {
+                    Long empId = Long.parseLong(empIdStr.trim());
+                    return nhanVienRepository.findById(empId).orElse(null);
+                } catch (NumberFormatException e) {
+                    // Ignore
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     public Page<HoaDonResponseDTO> layDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, Integer trangThai, int page, int size) {
@@ -114,7 +133,10 @@ public class HoaDonServiceImpl implements HoaDonService {
             .collect(Collectors.toList());
 
         String nguoiTao = (hoaDon.getNhanVien() != null) ? hoaDon.getNhanVien().getHoVaTen() : "";
-        String email = (hoaDon.getKhachHang() != null) ? hoaDon.getKhachHang().getEmail() : "";
+        String email = hoaDon.getEmail();
+        if (email == null || email.trim().isEmpty()) {
+            email = (hoaDon.getKhachHang() != null) ? hoaDon.getKhachHang().getEmail() : "";
+        }
         String diaChi = hoaDon.getDiaChiKhachHang();
 
         HoaDonDetailResponseDTO.HoaDonDetailResponseDTOBuilder builder = HoaDonDetailResponseDTO.builder()
@@ -130,6 +152,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 .email(email)
                 .diaChi(diaChi)
                 .loaiDon(hoaDon.getLoaiHoaDon())
+                .trangThaiYeuCauHuy(hoaDon.getTrangThaiYeuCauHuy())
                 .ghiChu(hoaDon.getGhiChu())
                 .tongTienHang(hoaDon.getSoTienGoc())
                 .giamGia(hoaDon.getSoTienGiam())
@@ -151,17 +174,20 @@ public class HoaDonServiceImpl implements HoaDonService {
     @Override
     @Transactional
     public void capNhatTrangThaiHoaDon(Long id, Integer trangThaiMoi, String ghiChu) {
-        NhanVien nguoiThucHien = nhanVienRepository.findById(1L).orElse(null);
-
         HoaDon hoaDon = hoaDonRepository.findById(id)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + id));
+
+        NhanVien nguoiThucHien = getLoggedInEmployee();
+        if (nguoiThucHien == null && (hoaDon.getLoaiHoaDon() == null || hoaDon.getLoaiHoaDon() != 2)) {
+            nguoiThucHien = nhanVienRepository.findById(1L).orElse(null);
+        }
 
         Integer trangThaiCu = hoaDon.getTrangThai();
         validateTrangThai(hoaDon.getLoaiHoaDon(), trangThaiCu, trangThaiMoi);
 
         // --- XỬ LÝ QUẢN LÝ TỒN KHO ---
         // 1. Bán hàng Online: Trừ tồn kho khi đơn hàng chuyển từ Chưa xác nhận (0) -> Đã xác nhận (1)
-        if (hoaDon.getLoaiHoaDon() != null && hoaDon.getLoaiHoaDon() == 1 && trangThaiCu == 0 && trangThaiMoi == 1) {
+        if (hoaDon.getLoaiHoaDon() != null && hoaDon.getLoaiHoaDon() == 2 && trangThaiCu == 0 && trangThaiMoi == 1) {
             if (hoaDon.getDanhSachChiTiet() != null) {
                 for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
                     ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
@@ -185,8 +211,8 @@ public class HoaDonServiceImpl implements HoaDonService {
         // 2. Hoàn trả tồn kho khi Hủy đơn hàng (trangThaiMoi == 5)
         if (trangThaiMoi == 5) {
             if (hoaDon.getLoaiHoaDon() != null) {
-                if (hoaDon.getLoaiHoaDon() == 0) {
-                    // Offline/Tại quầy: luôn trả lại kho vì tồn kho đã bị trừ lúc thêm vào giỏ hàng
+                if (hoaDon.getLoaiHoaDon() == 0 || hoaDon.getLoaiHoaDon() == 1) {
+                    // Offline/Tại quầy/Giao hàng: luôn trả lại kho vì tồn kho đã bị trừ lúc thêm vào giỏ hàng
                     if (hoaDon.getDanhSachChiTiet() != null) {
                         for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
                             ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
@@ -198,7 +224,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                             }
                         }
                     }
-                } else if (hoaDon.getLoaiHoaDon() == 1) {
+                } else if (hoaDon.getLoaiHoaDon() == 2) {
                     // Online: chỉ trả lại kho nếu đơn hàng đã từng được xác nhận (trangThaiCu >= 1 && trangThaiCu <= 4)
                     if (trangThaiCu >= 1 && trangThaiCu <= 4) {
                         if (hoaDon.getDanhSachChiTiet() != null) {
@@ -275,5 +301,16 @@ public class HoaDonServiceImpl implements HoaDonService {
             case 5: return "Đã hủy";
             default: return "Không xác định";
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public HoaDonDetailResponseDTO traCuuHoaDon(String maHoaDon, String email) {
+        if (maHoaDon == null || maHoaDon.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+            throw new BadRequestException("Mã hóa đơn và email không được để trống.");
+        }
+        HoaDon hoaDon = hoaDonRepository.findByMaHoaDonAndEmail(maHoaDon.trim(), email.trim())
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy đơn hàng với thông tin đã cung cấp. Vui lòng kiểm tra lại mã đơn và email."));
+        return layChiTietHoaDon(hoaDon.getId());
     }
 }

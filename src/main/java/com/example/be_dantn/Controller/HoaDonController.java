@@ -76,4 +76,13 @@ public class HoaDonController {
         List<LichSuHoaDonResponseDTO> lichSu = hoaDonService.layLichSuHoaDon(id);
         return ResponseEntity.ok(new ResponseObject<>("success", "Lấy lịch sử hóa đơn thành công", lichSu));
     }
+
+    @GetMapping("/tra-cuu")
+    public ResponseEntity<ResponseObject<HoaDonDetailResponseDTO>> traCuuHoaDon(
+            @RequestParam String maHoaDon,
+            @RequestParam String email
+    ) {
+        HoaDonDetailResponseDTO hoaDonDetail = hoaDonService.traCuuHoaDon(maHoaDon, email);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Tra cứu hóa đơn thành công", hoaDonDetail));
+    }
 }

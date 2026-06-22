@@ -1,5 +1,6 @@
 package com.example.be_dantn.sevicer.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import com.example.be_dantn.Dto.HoaDonResponseDTO;
 import com.example.be_dantn.Dto.DonHangChoResponseDTO;
 import com.example.be_dantn.Dto.Request.ThanhToanRequestDTO;
@@ -8,11 +9,13 @@ import com.example.be_dantn.Entity.*;
 import com.example.be_dantn.exception.BadRequestException;
 import com.example.be_dantn.Repository.*;
 import com.example.be_dantn.sevicer.BanHangService;
+import com.example.be_dantn.sevicer.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -31,17 +34,40 @@ public class BanHangServiceImpl implements BanHangService {
     @Autowired private com.example.be_dantn.repository.HoaDonChiTietRepository hoaDonChiTietRepository;
     @Autowired private ChiTietSanPhamRepository chiTietSanPhamRepository;
     @Autowired private com.example.be_dantn.Config.CodeGenerator codeGenerator;
+    @Autowired private HttpServletRequest httpServletRequest;
+    @Autowired private EmailService emailService;
+    @Autowired private ThongBaoRepository thongBaoRepository;
+
+    private NhanVien getLoggedInEmployee() {
+        if (httpServletRequest != null) {
+            String empIdStr = httpServletRequest.getHeader("X-Employee-Id");
+            if (empIdStr != null && !empIdStr.trim().isEmpty()) {
+                try {
+                    Long empId = Long.parseLong(empIdStr.trim());
+                    return nhanVienRepository.findById(empId).orElse(null);
+                } catch (NumberFormatException e) {
+                    // Ignore
+                }
+            }
+        }
+        return null;
+    }
 
     @Override
     @Transactional
-    public HoaDonResponseDTO taoDonHangCho() {
-        // Trong thực tế, sẽ lấy nhân viên từ context security
-        NhanVien nguoiTao = nhanVienRepository.findById(1L).orElse(null);
+    public HoaDonResponseDTO taoDonHangCho(Integer loaiHoaDon) {
+        NhanVien nguoiTao = null;
+        if (loaiHoaDon == null || loaiHoaDon != 2) {
+            nguoiTao = getLoggedInEmployee();
+            if (nguoiTao == null) {
+                nguoiTao = nhanVienRepository.findById(1L).orElse(null);
+            }
+        }
 
         HoaDon hoaDon = new HoaDon();
         hoaDon.setMaHoaDon(codeGenerator.generateCode("hoa_don", "ma_hoa_don", "HD"));
         hoaDon.setTrangThai(0); // Trạng thái "Chờ thanh toán"
-        hoaDon.setLoaiHoaDon(0); // Mặc định là "Tại quầy"
+        hoaDon.setLoaiHoaDon(loaiHoaDon != null ? loaiHoaDon : 0); // 0-Tại quầy, 1-Giao hàng, 2-Online
         hoaDon.setNhanVien(nguoiTao);
         hoaDon.setNgayTao(LocalDateTime.now());
 
@@ -79,9 +105,17 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDon.setTenKhachHang("Khách lẻ");
         }
 
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            hoaDon.setEmail(request.getEmail().trim());
+        } else if (hoaDon.getKhachHang() != null) {
+            hoaDon.setEmail(hoaDon.getKhachHang().getEmail());
+        }
+
         // Cập nhật hình thức nhận hàng
         if (Boolean.TRUE.equals(request.getIsGiaoHang())) {
-            hoaDon.setLoaiHoaDon(1); // Giao hàng
+            if (hoaDon.getLoaiHoaDon() != 2) {
+                hoaDon.setLoaiHoaDon(1); // Giao hàng
+            }
             hoaDon.setTenKhachHang(request.getTenNguoiNhan());
             hoaDon.setSoDienThoai(request.getSdtNguoiNhan());
             hoaDon.setDiaChiKhachHang(request.getDiaChiChiTiet());
@@ -116,12 +150,17 @@ public class BanHangServiceImpl implements BanHangService {
         BigDecimal tienChuyenKhoan = (request.getTienChuyenKhoan() == null) ? BigDecimal.ZERO : request.getTienChuyenKhoan();
         BigDecimal tongTienKhachTra = tienMat.add(tienChuyenKhoan);
 
-        if (tongTienKhachTra.compareTo(hoaDon.getTongTienThanhToan()) < 0) {
+        // Đơn giao hàng (1) hoặc online (2) hỗ trợ thanh toán COD (trả sau) với số tiền khách trả bằng 0 lúc chốt đơn
+        boolean isCOD = (hoaDon.getLoaiHoaDon() == 1 || hoaDon.getLoaiHoaDon() == 2) && tongTienKhachTra.compareTo(BigDecimal.ZERO) == 0;
+        if (!isCOD && tongTienKhachTra.compareTo(hoaDon.getTongTienThanhToan()) < 0) {
             throw new BadRequestException("Số tiền khách trả không đủ để thanh toán hóa đơn.");
         }
 
         // === BƯỚC 2: GHI NHẬN DÒNG TIỀN (BẢNG THANH_TOAN) ===
-        NhanVien nguoiThucHien = nhanVienRepository.findById(1L).orElse(null); // Lấy NV từ context
+        NhanVien nguoiThucHien = getLoggedInEmployee();
+        if (nguoiThucHien == null && (hoaDon.getLoaiHoaDon() == null || hoaDon.getLoaiHoaDon() != 2)) {
+            nguoiThucHien = nhanVienRepository.findById(1L).orElse(null);
+        }
         
         if (tienMat.compareTo(BigDecimal.ZERO) > 0) {
             ThanhToan ttTienMat = ThanhToan.builder()
@@ -157,6 +196,8 @@ public class BanHangServiceImpl implements BanHangService {
 
         if (hoaDon.getLoaiHoaDon() == 0) { // Tại quầy
             hoaDon.setTrangThai(4); // Đã hoàn thành
+        } else if (hoaDon.getLoaiHoaDon() == 2) { // Bán hàng online
+            hoaDon.setTrangThai(0); // Chưa xác nhận (chờ admin duyệt)
         } else { // Giao hàng
             hoaDon.setTrangThai(1); // Đã xác nhận
         }
@@ -174,13 +215,68 @@ public class BanHangServiceImpl implements BanHangService {
                 .build();
         lichSuHoaDonRepository.save(lichSu);
 
+        // === BƯỚC 5: GỬI EMAIL THÔNG BÁO CHO KHÁCH HÀNG (Nếu là đặt hàng online) ===
+        if (hoaDon.getLoaiHoaDon() == 2) {
+            String customerEmail = hoaDon.getEmail();
+            if (customerEmail == null || customerEmail.trim().isEmpty()) {
+                customerEmail = hoaDon.getKhachHang() != null ? hoaDon.getKhachHang().getEmail() : null;
+            }
+            if (customerEmail != null && !customerEmail.trim().isEmpty()) {
+                try {
+                    String customerName = hoaDon.getTenKhachHang() != null ? hoaDon.getTenKhachHang() : (hoaDon.getKhachHang() != null ? hoaDon.getKhachHang().getHoTen() : "Khách hàng");
+                    String orderCode = hoaDon.getMaHoaDon();
+                    
+                    DecimalFormat df = new DecimalFormat("#,###");
+                    String totalAmountStr = df.format(hoaDon.getTongTienThanhToan()) + " đ";
+                    
+                    String paymentMethodText = (tienChuyenKhoan.compareTo(BigDecimal.ZERO) > 0) 
+                            ? "Thanh toán online qua VNPAY" 
+                            : "Thanh toán khi nhận hàng (COD)";
+                    
+                    // Format products HTML table rows
+                    StringBuilder productsHtml = new StringBuilder();
+                    if (hoaDon.getDanhSachChiTiet() != null) {
+                        for (HoaDonChiTiet detailItem : hoaDon.getDanhSachChiTiet()) {
+                            ChiTietSanPham ctsp = detailItem.getChiTietSanPham();
+                            String productName = ctsp != null && ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : "Sản phẩm";
+                            String color = ctsp != null && ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "";
+                            String size = ctsp != null && ctsp.getKichThuoc() != null ? ctsp.getKichThuoc().getTenKichThuoc() : "";
+                            String variantDetails = String.format("%s (%s, %s)", productName, color, size);
+                            
+                            String priceStr = df.format(detailItem.getDonGia()) + " đ";
+                            productsHtml.append("<tr>")
+                                    .append("<td style=\"padding: 8px; border-bottom: 1px solid #ddd;\">").append(variantDetails).append("</td>")
+                                    .append("<td style=\"padding: 8px; border-bottom: 1px solid #ddd; text-align: center;\">").append(detailItem.getSoLuong()).append("</td>")
+                                    .append("<td style=\"padding: 8px; border-bottom: 1px solid #ddd; text-align: right;\">").append(priceStr).append("</td>")
+                                    .append("</tr>");
+                        }
+                    }
+                    
+                    String trackingLink = "http://localhost:5173/tra-cuu?maHoaDon=" + orderCode + "&email=" + customerEmail;
+                    
+                    emailService.sendOrderSuccessEmail(
+                            customerEmail,
+                            customerName,
+                            orderCode,
+                            totalAmountStr,
+                            paymentMethodText,
+                            productsHtml.toString(),
+                            trackingLink
+                    );
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
         return hoaDon.getId();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<DonHangChoResponseDTO> layDanhSachDonHangCho() {
-        List<HoaDon> list = hoaDonRepository.findByTrangThaiOrderByNgayTaoDesc(0);
+        // Chỉ lấy hóa đơn chờ (trạng thái = 0) có loại là 0 (Tại quầy) hoặc 1 (Giao hàng)
+        List<HoaDon> list = hoaDonRepository.findByTrangThaiAndLoaiHoaDonIn(0, List.of(0, 1));
         return list.stream().map(h -> {
             DonHangChoResponseDTO.KhachHangDTO kh = null;
             if (h.getKhachHang() != null) {
@@ -351,9 +447,12 @@ public class BanHangServiceImpl implements BanHangService {
             throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
         }
 
-        // Trừ tồn kho biến thể
-        variant.setSoLuongTon(variant.getSoLuongTon() - soLuong);
-        chiTietSanPhamRepository.save(variant);
+        // Bán hàng online: Không trừ tồn kho khi thêm vào giỏ hàng (chỉ validate)
+        // Bán hàng offline: Trừ tồn kho ngay lập tức
+        if (hoaDon.getLoaiHoaDon() != 2) {
+            variant.setSoLuongTon(variant.getSoLuongTon() - soLuong);
+            chiTietSanPhamRepository.save(variant);
+        }
 
         // Tìm xem sản phẩm đã có trong hóa đơn chưa
         HoaDonChiTiet existingDetail = null;
@@ -413,16 +512,22 @@ public class BanHangServiceImpl implements BanHangService {
         ChiTietSanPham variant = detail.getChiTietSanPham();
         int diff = soLuong - detail.getSoLuong();
 
-        if (diff > 0) {
-            if (variant.getSoLuongTon() < diff) {
+        if (hoaDon.getLoaiHoaDon() != 2) {
+            if (diff > 0) {
+                if (variant.getSoLuongTon() < diff) {
+                    throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
+                }
+                variant.setSoLuongTon(variant.getSoLuongTon() - diff);
+            } else if (diff < 0) {
+                variant.setSoLuongTon(variant.getSoLuongTon() + Math.abs(diff));
+            }
+            chiTietSanPhamRepository.save(variant);
+        } else {
+            // Đơn online: chỉ validate tồn kho khi tăng số lượng
+            if (diff > 0 && variant.getSoLuongTon() < diff) {
                 throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
             }
-            variant.setSoLuongTon(variant.getSoLuongTon() - diff);
-        } else if (diff < 0) {
-            variant.setSoLuongTon(variant.getSoLuongTon() + Math.abs(diff));
         }
-
-        chiTietSanPhamRepository.save(variant);
 
         detail.setSoLuong(soLuong);
         hoaDonChiTietRepository.save(detail);
@@ -442,9 +547,11 @@ public class BanHangServiceImpl implements BanHangService {
             throw new BadRequestException("Hóa đơn không ở trạng thái chờ thanh toán.");
         }
 
-        ChiTietSanPham variant = detail.getChiTietSanPham();
-        variant.setSoLuongTon(variant.getSoLuongTon() + detail.getSoLuong());
-        chiTietSanPhamRepository.save(variant);
+        if (hoaDon.getLoaiHoaDon() != 2) {
+            ChiTietSanPham variant = detail.getChiTietSanPham();
+            variant.setSoLuongTon(variant.getSoLuongTon() + detail.getSoLuong());
+            chiTietSanPhamRepository.save(variant);
+        }
 
         hoaDon.getDanhSachChiTiet().remove(detail);
         hoaDonChiTietRepository.delete(detail);
@@ -550,5 +657,126 @@ public class BanHangServiceImpl implements BanHangService {
             tongTien = BigDecimal.ZERO;
         }
         hoaDon.setTongTienThanhToan(tongTien);
+    }
+
+    @Override
+    @Transactional
+    public void yeuCauHuyDon(Long orderId, String ghiChu) {
+        HoaDon hoaDon = hoaDonRepository.findById(orderId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + orderId));
+
+        if (hoaDon.getTrangThai() != 0 && hoaDon.getTrangThai() != 1) {
+            throw new BadRequestException("Chỉ có thể yêu cầu hủy đơn khi đơn hàng đang ở trạng thái Chờ xác nhận hoặc Đã xác nhận.");
+        }
+
+        hoaDon.setTrangThaiYeuCauHuy(1); // 1: Chờ xác nhận hủy
+        hoaDon.setNgaySua(LocalDateTime.now());
+        hoaDon.setNguoiSua("Khách hàng");
+        hoaDonRepository.save(hoaDon);
+
+        // Ghi lịch sử hóa đơn
+        LichSuHoaDon lichSu = LichSuHoaDon.builder()
+                .hoaDon(hoaDon)
+                .nhanVien(null)
+                .trangThai(hoaDon.getTrangThai())
+                .hanhDong("Khách hàng gửi yêu cầu hủy đơn")
+                .ghiChu(ghiChu)
+                .build();
+        lichSuHoaDonRepository.save(lichSu);
+
+        // Tạo thông báo cho nhân viên
+        ThongBao thongBao = ThongBao.builder()
+                .tieuDe("Yêu cầu hủy đơn hàng - " + hoaDon.getMaHoaDon())
+                .noiDung("Khách hàng " + hoaDon.getTenKhachHang() + " yêu cầu hủy đơn hàng " + hoaDon.getMaHoaDon() + ". Lý do: " + ghiChu)
+                .maHoaDon(hoaDon.getMaHoaDon())
+                .idHoaDon(hoaDon.getId())
+                .trangThai(0) // Chưa đọc
+                .build();
+        thongBaoRepository.save(thongBao);
+    }
+
+    @Override
+    @Transactional
+    public void pheDuyetHuyDon(Long orderId, Boolean dongY, String ghiChu) {
+        HoaDon hoaDon = hoaDonRepository.findById(orderId)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + orderId));
+
+        if (hoaDon.getTrangThaiYeuCauHuy() == null || hoaDon.getTrangThaiYeuCauHuy() != 1) {
+            throw new BadRequestException("Hóa đơn này không có yêu cầu hủy nào đang chờ duyệt.");
+        }
+
+        NhanVien nguoiThucHien = getLoggedInEmployee();
+        if (nguoiThucHien == null) {
+            nguoiThucHien = nhanVienRepository.findById(1L).orElse(null);
+        }
+
+        if (Boolean.TRUE.equals(dongY)) {
+            // Đồng ý hủy
+            Integer trangThaiCu = hoaDon.getTrangThai();
+            hoaDon.setTrangThai(5); // Đã hủy
+            hoaDon.setTrangThaiYeuCauHuy(3); // Đã đồng ý hủy
+            hoaDon.setNgaySua(LocalDateTime.now());
+            hoaDon.setNguoiSua(nguoiThucHien != null ? nguoiThucHien.getHoVaTen() : "Hệ thống");
+
+            // Hoàn trả số lượng tồn kho (Copy từ logic của HoaDonServiceImpl.java)
+            if (hoaDon.getLoaiHoaDon() != null) {
+                if (hoaDon.getLoaiHoaDon() == 0 || hoaDon.getLoaiHoaDon() == 1) {
+                    if (hoaDon.getDanhSachChiTiet() != null) {
+                        for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                            ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                            if (ctsp != null) {
+                                int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                                int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                                ctsp.setSoLuongTon(soLuongTon + soLuongBan);
+                                chiTietSanPhamRepository.save(ctsp);
+                            }
+                        }
+                    }
+                } else if (hoaDon.getLoaiHoaDon() == 2) {
+                    if (trangThaiCu >= 1) {
+                        if (hoaDon.getDanhSachChiTiet() != null) {
+                            for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                                ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                                if (ctsp != null) {
+                                    int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                                    int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                                    ctsp.setSoLuongTon(soLuongTon + soLuongBan);
+                                    chiTietSanPhamRepository.save(ctsp);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            hoaDonRepository.save(hoaDon);
+
+            // Ghi lịch sử hóa đơn
+            LichSuHoaDon lichSu = LichSuHoaDon.builder()
+                    .hoaDon(hoaDon)
+                    .nhanVien(nguoiThucHien)
+                    .trangThai(5)
+                    .hanhDong("Đồng ý yêu cầu hủy đơn hàng")
+                    .ghiChu(ghiChu)
+                    .build();
+            lichSuHoaDonRepository.save(lichSu);
+
+        } else {
+            // Từ chối hủy
+            hoaDon.setTrangThaiYeuCauHuy(2); // Từ chối hủy
+            hoaDon.setNgaySua(LocalDateTime.now());
+            hoaDon.setNguoiSua(nguoiThucHien != null ? nguoiThucHien.getHoVaTen() : "Hệ thống");
+            hoaDonRepository.save(hoaDon);
+
+            // Ghi lịch sử hóa đơn
+            LichSuHoaDon lichSu = LichSuHoaDon.builder()
+                    .hoaDon(hoaDon)
+                    .nhanVien(nguoiThucHien)
+                    .trangThai(hoaDon.getTrangThai())
+                    .hanhDong("Từ chối yêu cầu hủy đơn hàng")
+                    .ghiChu(ghiChu)
+                    .build();
+            lichSuHoaDonRepository.save(lichSu);
+        }
     }
 }

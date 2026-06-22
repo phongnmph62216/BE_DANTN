@@ -1,14 +1,20 @@
 package com.example.be_dantn.Controller;
 
 import com.example.be_dantn.Dto.ResponseObject;
+import com.example.be_dantn.Dto.Request.ThanhToanRequestDTO;
+import com.example.be_dantn.Entity.HoaDon;
+import com.example.be_dantn.repository.HoaDonRepository;
+import com.example.be_dantn.sevicer.BanHangService;
 import com.example.be_dantn.sevicer.VNPayService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/v1/vnpay")
@@ -16,6 +22,12 @@ public class VNPayController {
 
     @Autowired
     private VNPayService vnPayService;
+
+    @Autowired
+    private HoaDonRepository hoaDonRepository;
+
+    @Autowired
+    private BanHangService banHangService;
 
     /**
      * Tạo URL thanh toán VNPAY
@@ -65,14 +77,37 @@ public class VNPayController {
         String orderInfo = params.getOrDefault("vnp_OrderInfo", "");
         String transactionNo = params.getOrDefault("vnp_TransactionNo", "");
 
+        // Tách lấy mã hóa đơn gốc (ví dụ: HD006_1719321495 -> HD006)
+        String maHoaDon = txnRef;
+        if (txnRef.contains("_")) {
+            maHoaDon = txnRef.split("_")[0];
+        }
+
+        boolean isSuccess = isValid && "00".equals(responseCode);
+
+        // Nếu thanh toán thành công, tiến hành chốt hóa đơn trên DB
+        if (isSuccess && !maHoaDon.isEmpty()) {
+            Optional<HoaDon> hoaDonOpt = hoaDonRepository.findByMaHoaDon(maHoaDon);
+            if (hoaDonOpt.isPresent()) {
+                HoaDon hoaDon = hoaDonOpt.get();
+                if (hoaDon.getTrangThai() == 0) { // Chỉ chốt nếu hóa đơn đang ở trạng thái chờ thanh toán
+                    ThanhToanRequestDTO payReq = new ThanhToanRequestDTO();
+                    payReq.setTienMat(BigDecimal.ZERO);
+                    payReq.setTienChuyenKhoan(hoaDon.getTongTienThanhToan());
+                    payReq.setGhiChu("Thanh toán online qua VNPAY. Mã GD: " + transactionNo);
+                    banHangService.thanhToanHoaDon(hoaDon.getId(), payReq);
+                }
+            }
+        }
+
         Map<String, String> result = new HashMap<>();
         result.put("isValid", String.valueOf(isValid));
         result.put("responseCode", responseCode);
-        result.put("txnRef", txnRef);
+        result.put("txnRef", maHoaDon); // Trả về mã đơn hàng gốc để hiển thị trên FE
         result.put("amount", String.valueOf(Long.parseLong(amount) / 100)); // Chia lại 100
         result.put("orderInfo", orderInfo);
         result.put("transactionNo", transactionNo);
-        result.put("isSuccess", String.valueOf(isValid && "00".equals(responseCode)));
+        result.put("isSuccess", String.valueOf(isSuccess));
 
         return ResponseEntity.ok(new ResponseObject<>("success", "Kết quả thanh toán", result));
     }

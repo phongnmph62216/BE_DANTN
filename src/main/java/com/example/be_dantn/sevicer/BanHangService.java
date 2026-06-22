@@ -7,7 +7,7 @@ import com.example.be_dantn.Dto.Request.ThongTinNhanHangRequestDTO;
 import java.util.List;
 
 public interface BanHangService {
-    HoaDonResponseDTO taoDonHangCho();
+    HoaDonResponseDTO taoDonHangCho(Integer loaiHoaDon);
     void capNhatThongTinNhanHang(Long idHoaDon, ThongTinNhanHangRequestDTO request);
     Long thanhToanHoaDon(Long idHoaDon, ThanhToanRequestDTO request);
     List<DonHangChoResponseDTO> layDanhSachDonHangCho();
@@ -18,4 +18,6 @@ public interface BanHangService {
     void xoaSanPhamKhoiHoaDon(Long idHoaDonChiTiet);
     void apDungVoucher(Long idHoaDon, String maPhieuGiamGia);
     void xoaVoucher(Long idHoaDon);
+    void yeuCauHuyDon(Long orderId, String ghiChu);
+    void pheDuyetHuyDon(Long orderId, Boolean dongY, String ghiChu);
 }

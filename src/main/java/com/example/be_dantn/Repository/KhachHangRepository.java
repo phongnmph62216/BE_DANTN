@@ -56,4 +56,10 @@ public interface KhachHangRepository extends JpaRepository<KhachHang, Long> {
             LEFT JOIN kh.danhSachDiaChi dc ON dc.kieuDiaChiLaMacDinh = true
             """)
     List<KhachHangResponseDTO> findAllForExcel();
+
+    java.util.Optional<KhachHang> findBySdt(String sdt);
+    java.util.Optional<KhachHang> findByEmail(String email);
+    java.util.Optional<KhachHang> findByTenTaiKhoan(String tenTaiKhoan);
+    boolean existsBySdt(String sdt);
+    boolean existsByEmail(String email);
 }

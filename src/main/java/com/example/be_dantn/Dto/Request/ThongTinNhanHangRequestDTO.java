@@ -9,6 +9,7 @@ public class ThongTinNhanHangRequestDTO {
     private Boolean isGiaoHang;
     private String tenNguoiNhan;
     private String sdtNguoiNhan;
+    private String email;
     private String diaChiChiTiet;
     private BigDecimal phiVanChuyen;
 }

@@ -25,6 +25,8 @@ public class KhachHang {
     private String email;
     private Integer gioiTinh; // 0: Nữ, 1: Nam, 2: Khác
     private LocalDate ngaySinh;
+    private String tenTaiKhoan;
+    private String matKhau;
     private Integer trangThai; // 0: Ngừng hoạt động, 1: Đang hoạt động
 
     @OneToMany(mappedBy = "khachHang", cascade = CascadeType.ALL, orphanRemoval = true)

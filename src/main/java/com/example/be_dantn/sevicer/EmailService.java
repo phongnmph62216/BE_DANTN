@@ -16,4 +16,15 @@ public interface EmailService {
             String emailAccount,
             String rawPassword
     );
+
+    void sendOrderSuccessEmail(
+            String toEmail,
+            String customerName,
+            String orderCode,
+            String totalAmount,
+            String paymentMethod,
+            String listProductsHtml,
+            String trackingLink
+    );
+
 }

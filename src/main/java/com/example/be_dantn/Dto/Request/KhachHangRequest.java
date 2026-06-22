@@ -25,4 +25,5 @@ public class KhachHangRequest {
     private Integer gioiTinh;
     private LocalDate ngaySinh;
     private Integer trangThai;
+    private String matKhau;
 }

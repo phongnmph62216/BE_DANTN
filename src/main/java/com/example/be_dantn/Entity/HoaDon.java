@@ -38,7 +38,7 @@ public class HoaDon {
     private String maHoaDon;
 
     @Column(name = "loai_hoa_don")
-    private Integer loaiHoaDon; // 0 - Tại quầy, 1 - Online/Giao hàng
+    private Integer loaiHoaDon; // 0 - Tại quầy, 1 - Giao hàng (POS), 2 - Online
 
     @Column(name = "phi_van_chuyen")
     private BigDecimal phiVanChuyen;
@@ -61,11 +61,18 @@ public class HoaDon {
     @Column(name = "so_dien_thoai")
     private String soDienThoai;
 
+    @Column(name = "email")
+    private String email;
+
     @Column(name = "ghi_chu")
     private String ghiChu;
 
     @Column(name = "trang_thai")
     private Integer trangThai; // 0-Chưa xác nhận, 1-Đã xác nhận, 2-Chờ giao, 3-Đang giao, 4-Đã hoàn thành, 5-Đã hủy
+
+    @Column(name = "trang_thai_yeu_cau_huy")
+    private Integer trangThaiYeuCauHuy; // null hoặc 0: Không có, 1: Chờ xác nhận hủy, 2: Từ chối hủy, 3: Đã hủy
+
 
     @Column(name = "ngay_tao")
     private LocalDateTime ngayTao;
