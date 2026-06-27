@@ -21,7 +21,7 @@ public interface EmailService {
             String toEmail,
             String customerName,
             String orderCode,
-            String totalAmount,
+            com.example.be_dantn.Entity.HoaDon hoaDon,
             String paymentMethod,
             String listProductsHtml,
             String trackingLink

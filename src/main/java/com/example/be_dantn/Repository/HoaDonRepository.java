@@ -18,7 +18,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
 
     Optional<HoaDon> findByMaHoaDon(String maHoaDon);
 
-    @Query("SELECT h FROM HoaDon h WHERE h.maHoaDon = :maHoaDon AND (LOWER(h.email) = LOWER(:email) OR (h.khachHang IS NOT NULL AND LOWER(h.khachHang.email) = LOWER(:email)))")
+    @Query("SELECT h FROM HoaDon h LEFT JOIN h.khachHang kh WHERE LOWER(TRIM(h.maHoaDon)) = LOWER(TRIM(:maHoaDon)) AND (LOWER(TRIM(h.email)) = LOWER(TRIM(:email)) OR (kh IS NOT NULL AND LOWER(TRIM(kh.email)) = LOWER(TRIM(:email))))")
     Optional<HoaDon> findByMaHoaDonAndEmail(@Param("maHoaDon") String maHoaDon, @Param("email") String email);
 
     @Query("""
@@ -89,4 +89,6 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
 
     @Query("SELECT h FROM HoaDon h WHERE h.trangThai = :trangThai AND h.loaiHoaDon IN :loaiHoaDons ORDER BY h.ngayTao DESC")
     List<HoaDon> findByTrangThaiAndLoaiHoaDonIn(@Param("trangThai") Integer trangThai, @Param("loaiHoaDons") List<Integer> loaiHoaDons);
+
+    List<HoaDon> findByKhachHangIdOrderByNgayTaoDesc(Long khachHangId);
 }

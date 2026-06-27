@@ -258,7 +258,7 @@ public class BanHangServiceImpl implements BanHangService {
                             customerEmail,
                             customerName,
                             orderCode,
-                            totalAmountStr,
+                            hoaDon,
                             paymentMethodText,
                             productsHtml.toString(),
                             trackingLink

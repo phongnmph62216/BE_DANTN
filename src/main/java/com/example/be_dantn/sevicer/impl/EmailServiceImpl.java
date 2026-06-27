@@ -1,5 +1,6 @@
 package com.example.be_dantn.sevicer.impl;
 
+import com.example.be_dantn.Entity.HoaDon;
 import com.example.be_dantn.sevicer.EmailService;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
 
 @Service
 @RequiredArgsConstructor
@@ -165,7 +169,7 @@ public class EmailServiceImpl implements EmailService {
             String toEmail,
             String customerName,
             String orderCode,
-            String totalAmount,
+            HoaDon hoaDon,
             String paymentMethod,
             String listProductsHtml,
             String trackingLink
@@ -183,6 +187,27 @@ public class EmailServiceImpl implements EmailService {
             helper.setTo(toEmail);
             helper.setSubject("[Bee Stylish] Xác Nhận Đơn Hàng Thành Công - " + orderCode);
 
+            DecimalFormat df = new DecimalFormat("#,###");
+            String totalAmountFormatted = df.format(hoaDon.getTongTienThanhToan()) + " đ";
+            String subtotalFormatted = df.format(hoaDon.getSoTienGoc() != null ? hoaDon.getSoTienGoc() : BigDecimal.ZERO) + " đ";
+            String shippingFeeFormatted = df.format(hoaDon.getPhiVanChuyen() != null ? hoaDon.getPhiVanChuyen() : BigDecimal.ZERO) + " đ";
+            String discountFormatted = "- " + df.format(hoaDon.getSoTienGiam() != null ? hoaDon.getSoTienGiam() : BigDecimal.ZERO) + " đ";
+
+            String recipientName = hoaDon.getTenKhachHang() != null ? hoaDon.getTenKhachHang() : "";
+            String recipientPhone = hoaDon.getSoDienThoai() != null ? hoaDon.getSoDienThoai() : "";
+            String recipientAddress = hoaDon.getDiaChiKhachHang() != null ? hoaDon.getDiaChiKhachHang() : "";
+
+            String noteHtml = "";
+            if (hoaDon.getGhiChu() != null && !hoaDon.getGhiChu().trim().isEmpty()) {
+                noteHtml = String.format(
+                        "<div style=\"margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background-color: #fafafa;\">" +
+                        "<h3 style=\"color: #ef972d; margin-top: 0; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;\">GHI CHÚ</h3>" +
+                        "<p style=\"margin: 0; font-size: 14px; color: #555;\">%s</p>" +
+                        "</div>",
+                        hoaDon.getGhiChu()
+                );
+            }
+
             String htmlContent = """
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px; background-color: #ffffff;">
                     <div style="text-align: center; border-bottom: 2px solid #ef972d; padding-bottom: 15px; margin-bottom: 20px;">
@@ -197,26 +222,53 @@ public class EmailServiceImpl implements EmailService {
                         </p>
                     </div>
                     
-                    <div style="background-color: #fffaf0; border: 1px dashed #ef972d; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
-                        <div style="margin-bottom: 10px; font-size: 15px; color: #333;">
-                            <strong>Mã đơn hàng:</strong> <span style="color: #ef972d; font-weight: bold; font-size: 18px;">%s</span>
-                        </div>
-                        <div style="margin-bottom: 10px; font-size: 15px; color: #333;">
-                            <strong>Phương thức thanh toán:</strong> <span style="font-weight: bold;">%s</span>
-                        </div>
-                        <div style="font-size: 15px; color: #333;">
-                            <strong>Tổng thanh toán:</strong> <span style="color: #ef972d; font-weight: bold;">%s</span>
-                        </div>
+                    <div style="background-color: #fffaf0; border: 1px dashed #ef972d; border-radius: 8px; padding: 15px; margin-bottom: 25px;">
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 5px 0; color: #333; width: 40%%;"><strong>Mã đơn hàng:</strong></td>
+                                <td style="padding: 5px 0; color: #ef972d; font-weight: bold; font-size: 16px;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #333;"><strong>Phương thức thanh toán:</strong></td>
+                                <td style="padding: 5px 0; color: #333; font-weight: bold;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #333;"><strong>Tổng thanh toán:</strong></td>
+                                <td style="padding: 5px 0; color: #ef972d; font-weight: bold;">%s</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background-color: #fafafa;">
+                        <h3 style="color: #ef972d; margin-top: 0; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">THÔNG TIN NHẬN HÀNG</h3>
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 5px 0; color: #666; width: 30%%;">Người nhận:</td>
+                                <td style="padding: 5px 0; color: #333; font-weight: bold;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Số điện thoại:</td>
+                                <td style="padding: 5px 0; color: #333;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Email:</td>
+                                <td style="padding: 5px 0; color: #333;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Địa chỉ giao:</td>
+                                <td style="padding: 5px 0; color: #333; line-height: 1.4;">%s</td>
+                            </tr>
+                        </table>
                     </div>
                     
                     <div style="margin-bottom: 25px;">
-                        <h3 style="color: #333; border-bottom: 1px solid #eee; padding-bottom: 8px; font-size: 16px;">DANH SÁCH SẢN PHẨM</h3>
+                        <h3 style="color: #ef972d; border-bottom: 1px solid #ddd; padding-bottom: 8px; font-size: 16px; margin-bottom: 12px;">DANH SÁCH SẢN PHẨM</h3>
                         <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
                             <thead>
                                 <tr style="background-color: #f9f9f9; text-align: left; font-weight: bold;">
-                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; width: 60%%;">Sản phẩm</th>
-                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 15%%;">SL</th>
-                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 25%%;">Đơn giá</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; width: 60%%; color: #555;">Sản phẩm</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center; width: 15%%; color: #555;">SL</th>
+                                    <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right; width: 25%%; color: #555;">Đơn giá</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -224,6 +276,30 @@ public class EmailServiceImpl implements EmailService {
                             </tbody>
                         </table>
                     </div>
+
+                    <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background-color: #fafafa; margin-left: auto; max-width: 320px;">
+                        <h3 style="color: #ef972d; margin-top: 0; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">TỔNG KẾT TÀI CHÍNH</h3>
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Tổng tiền hàng:</td>
+                                <td style="padding: 5px 0; color: #333; text-align: right; font-weight: bold;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Phí vận chuyển:</td>
+                                <td style="padding: 5px 0; color: #333; text-align: right;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #666;">Số tiền giảm:</td>
+                                <td style="padding: 5px 0; color: #333; text-align: right; color: #d9534f;">%s</td>
+                            </tr>
+                            <tr style="border-top: 1px solid #ddd;">
+                                <td style="padding: 8px 0 0 0; color: #333; font-weight: bold;">Tổng thanh toán:</td>
+                                <td style="padding: 8px 0 0 0; color: #ef972d; text-align: right; font-weight: bold; font-size: 16px;">%s</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    %s
                     
                     <div style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
                         <a href="%s" style="background-color: #ef972d; color: #ffffff; text-decoration: none; padding: 12px 30px; font-size: 15px; font-weight: bold; border-radius: 5px; display: inline-block;">Tra cứu trạng thái đơn hàng</a>
@@ -234,7 +310,23 @@ public class EmailServiceImpl implements EmailService {
                         &copy; 2026 Bee Stylish. All rights reserved.
                     </div>
                 </div>
-                """.formatted(customerName, orderCode, paymentMethod, totalAmount, listProductsHtml, trackingLink);
+                """.formatted(
+                    customerName, 
+                    orderCode, 
+                    paymentMethod, 
+                    totalAmountFormatted,
+                    recipientName,
+                    recipientPhone,
+                    toEmail,
+                    recipientAddress,
+                    listProductsHtml,
+                    subtotalFormatted,
+                    shippingFeeFormatted,
+                    discountFormatted,
+                    totalAmountFormatted,
+                    noteHtml,
+                    trackingLink
+                );
 
             helper.setText(htmlContent, true);
 

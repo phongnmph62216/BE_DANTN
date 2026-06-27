@@ -35,4 +35,6 @@ public interface HoaDonService {
     List<LichSuHoaDonResponseDTO> layLichSuHoaDon(Long id);
 
     HoaDonDetailResponseDTO traCuuHoaDon(String maHoaDon, String email);
+
+    List<HoaDonDetailResponseDTO> layDanhSachHoaDonTheoKhachHang(Long khachHangId);
 }

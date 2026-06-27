@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.example.be_dantn.repository.HoaDonRepository;
+import com.example.be_dantn.Entity.HoaDon;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/v1/hoa-don")
 public class HoaDonController {
@@ -56,6 +62,23 @@ public class HoaDonController {
         return new ResponseEntity<>(excelData, headers, HttpStatus.OK);
     }
 
+    @GetMapping("/tra-cuu")
+    public ResponseEntity<ResponseObject<HoaDonDetailResponseDTO>> traCuuHoaDon(
+            @RequestParam String maHoaDon,
+            @RequestParam String email
+    ) {
+        HoaDonDetailResponseDTO hoaDonDetail = hoaDonService.traCuuHoaDon(maHoaDon, email);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Tra cứu hóa đơn thành công", hoaDonDetail));
+    }
+
+    @GetMapping("/khach-hang")
+    public ResponseEntity<ResponseObject<List<HoaDonDetailResponseDTO>>> getHoaDonKhachHang(
+            @RequestHeader("X-User-Id") Long khachHangId
+    ) {
+        List<HoaDonDetailResponseDTO> list = hoaDonService.layDanhSachHoaDonTheoKhachHang(khachHangId);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Lấy danh sách đơn hàng thành công", list));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ResponseObject<HoaDonDetailResponseDTO>> getHoaDonDetail(@PathVariable Long id) {
         HoaDonDetailResponseDTO hoaDonDetail = hoaDonService.layChiTietHoaDon(id);
@@ -75,14 +98,5 @@ public class HoaDonController {
     public ResponseEntity<ResponseObject<List<LichSuHoaDonResponseDTO>>> getLichSuHoaDon(@PathVariable Long id) {
         List<LichSuHoaDonResponseDTO> lichSu = hoaDonService.layLichSuHoaDon(id);
         return ResponseEntity.ok(new ResponseObject<>("success", "Lấy lịch sử hóa đơn thành công", lichSu));
-    }
-
-    @GetMapping("/tra-cuu")
-    public ResponseEntity<ResponseObject<HoaDonDetailResponseDTO>> traCuuHoaDon(
-            @RequestParam String maHoaDon,
-            @RequestParam String email
-    ) {
-        HoaDonDetailResponseDTO hoaDonDetail = hoaDonService.traCuuHoaDon(maHoaDon, email);
-        return ResponseEntity.ok(new ResponseObject<>("success", "Tra cứu hóa đơn thành công", hoaDonDetail));
     }
 }

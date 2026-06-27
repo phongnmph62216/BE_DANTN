@@ -310,7 +310,14 @@ public class HoaDonServiceImpl implements HoaDonService {
             throw new BadRequestException("Mã hóa đơn và email không được để trống.");
         }
         HoaDon hoaDon = hoaDonRepository.findByMaHoaDonAndEmail(maHoaDon.trim(), email.trim())
-                .orElseThrow(() -> new BadRequestException("Không tìm thấy đơn hàng với thông tin đã cung cấp. Vui lòng kiểm tra lại mã đơn và email."));
+                 .orElseThrow(() -> new BadRequestException("Không tìm thấy đơn hàng với thông tin đã cung cấp. Vui lòng kiểm tra lại mã đơn và email."));
         return layChiTietHoaDon(hoaDon.getId());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<HoaDonDetailResponseDTO> layDanhSachHoaDonTheoKhachHang(Long khachHangId) {
+        List<HoaDon> hoaDons = hoaDonRepository.findByKhachHangIdOrderByNgayTaoDesc(khachHangId);
+        return hoaDons.stream().map(h -> layChiTietHoaDon(h.getId())).collect(Collectors.toList());
     }
 }
