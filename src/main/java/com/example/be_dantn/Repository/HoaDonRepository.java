@@ -40,7 +40,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
                 (:tuNgay IS NULL OR h.ngayTao >= :tuNgay) AND
                 (:denNgay IS NULL OR h.ngayTao <= :denNgay) AND
                 (:loaiDon IS NULL OR h.loaiHoaDon = :loaiDon) AND
-                (:trangThai IS NULL OR h.trangThai = :trangThai)
+                (:trangThai IS NULL OR h.trangThai IN :trangThai)
             ORDER BY h.ngayTao DESC
             """)
     Page<HoaDonResponseDTO> findHoaDonByFilters(
@@ -48,7 +48,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
             @Param("tuNgay") LocalDateTime tuNgay,
             @Param("denNgay") LocalDateTime denNgay,
             @Param("loaiDon") Integer loaiDon,
-            @Param("trangThai") Integer trangThai,
+            @Param("trangThai") List<Integer> trangThai,
             Pageable pageable
     );
 
@@ -71,7 +71,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
                 (:tuNgay IS NULL OR h.ngayTao >= :tuNgay) AND
                 (:denNgay IS NULL OR h.ngayTao <= :denNgay) AND
                 (:loaiDon IS NULL OR h.loaiHoaDon = :loaiDon) AND
-                (:trangThai IS NULL OR h.trangThai = :trangThai)
+                (:trangThai IS NULL OR h.trangThai IN :trangThai)
             ORDER BY h.ngayTao DESC
             """)
     List<HoaDonResponseDTO> findHoaDonByFiltersForExport(
@@ -79,7 +79,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
             @Param("tuNgay") LocalDateTime tuNgay,
             @Param("denNgay") LocalDateTime denNgay,
             @Param("loaiDon") Integer loaiDon,
-            @Param("trangThai") Integer trangThai
+            @Param("trangThai") List<Integer> trangThai
     );
 
     @Query("SELECT COUNT(h) FROM HoaDon h WHERE h.phieuGiamGia.id = :phieuGiamGiaId AND h.trangThai <> 5")

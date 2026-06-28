@@ -136,6 +136,8 @@ public class BanHangServiceImpl implements BanHangService {
         HoaDon hoaDon = hoaDonRepository.findById(idHoaDon)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + idHoaDon));
 
+        syncGiaSanPhamTrongHoaDon(hoaDon);
+
         if (hoaDon.getTrangThai() != 0) {
             throw new BadRequestException("Hóa đơn không ở trạng thái chờ thanh toán.");
         }
@@ -273,10 +275,13 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public List<DonHangChoResponseDTO> layDanhSachDonHangCho() {
         // Chỉ lấy hóa đơn chờ (trạng thái = 0) có loại là 0 (Tại quầy) hoặc 1 (Giao hàng)
         List<HoaDon> list = hoaDonRepository.findByTrangThaiAndLoaiHoaDonIn(0, List.of(0, 1));
+        for (HoaDon h : list) {
+            syncGiaSanPhamTrongHoaDon(h);
+        }
         return list.stream().map(h -> {
             DonHangChoResponseDTO.KhachHangDTO kh = null;
             if (h.getKhachHang() != null) {
@@ -338,10 +343,12 @@ public class BanHangServiceImpl implements BanHangService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public Object layChiTietDonHang(Long orderId) {
         HoaDon h = hoaDonRepository.findById(orderId)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + orderId));
+
+        syncGiaSanPhamTrongHoaDon(h);
 
         Map<String, Object> map = new HashMap<>();
         map.put("id", h.getId());
@@ -470,9 +477,14 @@ public class BanHangServiceImpl implements BanHangService {
             hoaDonChiTietRepository.save(existingDetail);
         } else {
             BigDecimal donGia = variant.getGiaBan();
+            LocalDateTime now = LocalDateTime.now();
             if (variant.getDotGiamGia() != null 
                 && variant.getDotGiamGia().getTrangThai() != null 
-                && variant.getDotGiamGia().getTrangThai() == 1) {
+                && variant.getDotGiamGia().getTrangThai() == 1
+                && variant.getDotGiamGia().getNgayBatDau() != null
+                && variant.getDotGiamGia().getNgayKetThuc() != null
+                && !now.isBefore(variant.getDotGiamGia().getNgayBatDau())
+                && !now.isAfter(variant.getDotGiamGia().getNgayKetThuc())) {
                 Integer phanTram = variant.getDotGiamGia().getPhanTramGiam();
                 if (phanTram != null && phanTram > 0) {
                     BigDecimal discount = donGia.multiply(BigDecimal.valueOf(phanTram)).divide(BigDecimal.valueOf(100));
@@ -615,6 +627,44 @@ public class BanHangServiceImpl implements BanHangService {
         hoaDon.setPhieuGiamGia(null);
         tinhTienHoaDon(hoaDon);
         hoaDonRepository.save(hoaDon);
+    }
+
+    private void syncGiaSanPhamTrongHoaDon(HoaDon hoaDon) {
+        if (hoaDon == null || hoaDon.getTrangThai() != 0) {
+            return;
+        }
+        boolean hasChanged = false;
+        if (hoaDon.getDanhSachChiTiet() != null) {
+            for (HoaDonChiTiet ct : hoaDon.getDanhSachChiTiet()) {
+                ChiTietSanPham variant = ct.getChiTietSanPham();
+                if (variant != null) {
+                    BigDecimal currentPrice = variant.getGiaBan();
+                    LocalDateTime now = LocalDateTime.now();
+                    if (variant.getDotGiamGia() != null 
+                        && variant.getDotGiamGia().getTrangThai() != null 
+                        && variant.getDotGiamGia().getTrangThai() == 1
+                        && variant.getDotGiamGia().getNgayBatDau() != null
+                        && variant.getDotGiamGia().getNgayKetThuc() != null
+                        && !now.isBefore(variant.getDotGiamGia().getNgayBatDau())
+                        && !now.isAfter(variant.getDotGiamGia().getNgayKetThuc())) {
+                        Integer phanTram = variant.getDotGiamGia().getPhanTramGiam();
+                        if (phanTram != null && phanTram > 0) {
+                            BigDecimal discount = currentPrice.multiply(BigDecimal.valueOf(phanTram)).divide(BigDecimal.valueOf(100));
+                            currentPrice = currentPrice.subtract(discount);
+                        }
+                    }
+                    if (ct.getDonGia() == null || ct.getDonGia().compareTo(currentPrice) != 0) {
+                        ct.setDonGia(currentPrice);
+                        hoaDonChiTietRepository.save(ct);
+                        hasChanged = true;
+                    }
+                }
+            }
+        }
+        if (hasChanged) {
+            tinhTienHoaDon(hoaDon);
+            hoaDonRepository.save(hoaDon);
+        }
     }
 
     private void tinhTienHoaDon(HoaDon hoaDon) {

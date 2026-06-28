@@ -99,7 +99,11 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
         phieuGiamGia.setGiaTri(request.getGiaTriGiam());
         phieuGiamGia.setGiaGiamToiDa(request.getGiamToiDa());
         phieuGiamGia.setDieuKienGiam(request.getDonToiThieu());
-        phieuGiamGia.setSoLuong(request.getSoLuong());
+        if (request.getKieuApDung() == 1) {
+            phieuGiamGia.setSoLuong(CollectionUtils.isEmpty(request.getDanhSachKhachHangIds()) ? 0 : request.getDanhSachKhachHangIds().size());
+        } else {
+            phieuGiamGia.setSoLuong(request.getSoLuong());
+        }
         phieuGiamGia.setNgayBatDau(request.getNgayBatDau());
         phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
 
@@ -230,7 +234,11 @@ public class PhieuGiamGiaServiceImpl implements PhieuGiamGiaService {
         phieuGiamGia.setGiaTri(request.getGiaTriGiam());
         phieuGiamGia.setGiaGiamToiDa(request.getGiamToiDa());
         phieuGiamGia.setDieuKienGiam(request.getDonToiThieu());
-        phieuGiamGia.setSoLuong(request.getSoLuong());
+        if (request.getKieuApDung() == 1) {
+            phieuGiamGia.setSoLuong(CollectionUtils.isEmpty(request.getDanhSachKhachHangIds()) ? 0 : request.getDanhSachKhachHangIds().size());
+        } else {
+            phieuGiamGia.setSoLuong(request.getSoLuong());
+        }
         phieuGiamGia.setNgayBatDau(request.getNgayBatDau());
         phieuGiamGia.setNgayKetThuc(request.getNgayKetThuc());
         phieuGiamGia.setTrangThai(calculatedStatus);

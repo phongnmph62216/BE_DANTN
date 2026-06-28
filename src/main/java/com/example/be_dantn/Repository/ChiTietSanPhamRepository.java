@@ -45,6 +45,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             AND (:trangThai IS NULL OR ctsp.trangThai = :trangThai)
             AND (:minPrice IS NULL OR ctsp.giaBan >= :minPrice)
             AND (:maxPrice IS NULL OR ctsp.giaBan <= :maxPrice)
+            AND (:idSanPham IS NULL OR sp.id = :idSanPham)
             """)
     Page<ChiTietSanPhamResponseDTO> findByFilters(
             @Param("keyword") String keyword,
@@ -53,6 +54,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             @Param("trangThai") Integer trangThai,
             @Param("minPrice") BigDecimal minPrice,
             @Param("maxPrice") BigDecimal maxPrice,
+            @Param("idSanPham") Long idSanPham,
             Pageable pageable
     );
 
@@ -86,6 +88,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             AND (:trangThai IS NULL OR ctsp.trangThai = :trangThai)
             AND (:minPrice IS NULL OR ctsp.giaBan >= :minPrice)
             AND (:maxPrice IS NULL OR ctsp.giaBan <= :maxPrice)
+            AND (:idSanPham IS NULL OR sp.id = :idSanPham)
             """)
     List<ChiTietSanPhamResponseDTO> findByFiltersForExcel(
             @Param("keyword") String keyword,
@@ -93,7 +96,8 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             @Param("idKichThuoc") Long idKichThuoc,
             @Param("trangThai") Integer trangThai,
             @Param("minPrice") BigDecimal minPrice,
-            @Param("maxPrice") BigDecimal maxPrice
+            @Param("maxPrice") BigDecimal maxPrice,
+            @Param("idSanPham") Long idSanPham
     );
 
     Optional<ChiTietSanPham> findByMaChiTietSanPham(String maChiTietSanPham);
@@ -101,4 +105,6 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
     // New methods for discount campaign
     List<ChiTietSanPham> findByDotGiamGia_Id(Long idDotGiamGia);
     List<ChiTietSanPham> findAllByIdIn(List<Long> ids);
+
+    boolean existsBySanPham_IdAndMauSac_IdAndKichThuoc_Id(Long idSanPham, Long idMauSac, Long idKichThuoc);
 }

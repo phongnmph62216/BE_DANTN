@@ -37,7 +37,7 @@ public class HoaDonController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime tuNgay,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime denNgay,
             @RequestParam(required = false) Integer loaiDon,
-            @RequestParam(required = false) Integer trangThai,
+            @RequestParam(required = false) List<Integer> trangThai,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -51,7 +51,7 @@ public class HoaDonController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime tuNgay,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime denNgay,
             @RequestParam(required = false) Integer loaiDon,
-            @RequestParam(required = false) Integer trangThai
+            @RequestParam(required = false) List<Integer> trangThai
     ) {
         byte[] excelData = hoaDonService.xuatExcelDanhSachHoaDon(maHoaDon, tuNgay, denNgay, loaiDon, trangThai);
 

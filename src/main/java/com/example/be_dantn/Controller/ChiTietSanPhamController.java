@@ -1,5 +1,6 @@
 package com.example.be_dantn.Controller;
 
+import com.example.be_dantn.Dto.Request.ChiTietSanPhamCreateRequest;
 import com.example.be_dantn.Dto.Request.ChiTietSanPhamUpdateRequest;
 import com.example.be_dantn.Dto.Response.ChiTietSanPhamResponseDTO;
 import com.example.be_dantn.Dto.Response.ResponseObject;
@@ -33,11 +34,12 @@ public class ChiTietSanPhamController {
             @RequestParam(required = false) Integer trangThai,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Long idSanPham,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<ChiTietSanPhamResponseDTO> variantPage = chiTietSanPhamService.getVariantsByFilter(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, pageable);
+        Page<ChiTietSanPhamResponseDTO> variantPage = chiTietSanPhamService.getVariantsByFilter(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, idSanPham, pageable);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Lấy danh sách biến thể thành công", variantPage));
     }
 
@@ -58,10 +60,11 @@ public class ChiTietSanPhamController {
             @RequestParam(required = false) Long idKichThuoc,
             @RequestParam(required = false) Integer trangThai,
             @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @RequestParam(required = false) Long idSanPham
     ) {
         try {
-            byte[] excelData = chiTietSanPhamService.exportToExcel(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice);
+            byte[] excelData = chiTietSanPhamService.exportToExcel(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, idSanPham);
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=danh_sach_bien_the.xlsx");
             headers.add(HttpHeaders.CONTENT_TYPE, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -101,6 +104,18 @@ public class ChiTietSanPhamController {
             return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Quét mã QR thành công", variantDTO));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ResponseObject<>(HttpStatus.NOT_FOUND, e.getMessage(), null));
+        }
+    }
+
+    @PostMapping
+    public ResponseEntity<ResponseObject<ChiTietSanPhamResponseDTO>> createVariant(
+            @Valid @RequestBody ChiTietSanPhamCreateRequest request
+    ) {
+        try {
+            ChiTietSanPhamResponseDTO createdVariant = chiTietSanPhamService.createVariant(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new ResponseObject<>(HttpStatus.CREATED, "Thêm biến thể thành công", createdVariant));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseObject<>(HttpStatus.BAD_REQUEST, e.getMessage(), null));
         }
     }
 }

@@ -76,13 +76,19 @@ public class HoaDonServiceImpl implements HoaDonService {
     }
 
     @Override
-    public Page<HoaDonResponseDTO> layDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, Integer trangThai, int page, int size) {
+    public Page<HoaDonResponseDTO> layDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, List<Integer> trangThai, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
+        if (trangThai != null && trangThai.isEmpty()) {
+            trangThai = null;
+        }
         return hoaDonRepository.findHoaDonByFilters(maHoaDon, tuNgay, denNgay, loaiDon, trangThai, pageable);
     }
 
     @Override
-    public byte[] xuatExcelDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, Integer trangThai) {
+    public byte[] xuatExcelDanhSachHoaDon(String maHoaDon, LocalDateTime tuNgay, LocalDateTime denNgay, Integer loaiDon, List<Integer> trangThai) {
+        if (trangThai != null && trangThai.isEmpty()) {
+            trangThai = null;
+        }
         List<HoaDonResponseDTO> hoaDonList = hoaDonRepository.findHoaDonByFiltersForExport(maHoaDon, tuNgay, denNgay, loaiDon, trangThai);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -208,8 +214,8 @@ public class HoaDonServiceImpl implements HoaDonService {
             }
         }
 
-        // 2. Hoàn trả tồn kho khi Hủy đơn hàng (trangThaiMoi == 5)
-        if (trangThaiMoi == 5) {
+        // 2. Hoàn trả tồn kho khi Hủy đơn hàng (5) hoặc Giao hàng không thành công (6)
+        if (trangThaiMoi == 5 || trangThaiMoi == 6) {
             if (hoaDon.getLoaiHoaDon() != null) {
                 if (hoaDon.getLoaiHoaDon() == 0 || hoaDon.getLoaiHoaDon() == 1) {
                     // Offline/Tại quầy/Giao hàng: luôn trả lại kho vì tồn kho đã bị trừ lúc thêm vào giỏ hàng
@@ -279,8 +285,11 @@ public class HoaDonServiceImpl implements HoaDonService {
             );
             
             Integer expectedNextState = nextStateMap.get(trangThaiCu);
-            if (trangThaiMoi != 5 && (expectedNextState == null || !expectedNextState.equals(trangThaiMoi))) { // Cho phép hủy từ mọi trạng thái
+            if (trangThaiMoi != 5 && trangThaiMoi != 6 && (expectedNextState == null || !expectedNextState.equals(trangThaiMoi))) { // Cho phép hủy từ mọi trạng thái, thất bại từ Đang giao
                  throw new BadRequestException(String.format("Không thể chuyển trạng thái từ '%s' sang '%s'.", getTrangThaiText(trangThaiCu), getTrangThaiText(trangThaiMoi)));
+            }
+            if (trangThaiMoi == 6 && trangThaiCu != 3) {
+                 throw new BadRequestException("Chỉ có thể chuyển sang trạng thái 'Giao hàng không thành công' từ trạng thái 'Đang giao'.");
             }
         }
     }
@@ -299,6 +308,7 @@ public class HoaDonServiceImpl implements HoaDonService {
             case 3: return "Đang giao";
             case 4: return "Đã hoàn thành";
             case 5: return "Đã hủy";
+            case 6: return "Giao hàng không thành công";
             default: return "Không xác định";
         }
     }

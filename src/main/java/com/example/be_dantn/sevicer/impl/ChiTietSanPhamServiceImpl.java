@@ -1,9 +1,16 @@
 package com.example.be_dantn.sevicer.impl;
 
+import com.example.be_dantn.Dto.Request.ChiTietSanPhamCreateRequest;
 import com.example.be_dantn.Dto.Request.ChiTietSanPhamUpdateRequest;
 import com.example.be_dantn.Dto.Response.ChiTietSanPhamResponseDTO;
 import com.example.be_dantn.Entity.ChiTietSanPham;
+import com.example.be_dantn.Entity.SanPham;
+import com.example.be_dantn.Entity.MauSac;
+import com.example.be_dantn.Entity.KichThuoc;
 import com.example.be_dantn.Repository.ChiTietSanPhamRepository;
+import com.example.be_dantn.Repository.SanPhamRepository;
+import com.example.be_dantn.Repository.MauSacRepository;
+import com.example.be_dantn.Repository.KichThuocRepository;
 import com.example.be_dantn.sevicer.ChiTietSanPhamService;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.*;
@@ -23,10 +30,13 @@ import java.util.List;
 public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
 
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
+    private final SanPhamRepository sanPhamRepository;
+    private final MauSacRepository mauSacRepository;
+    private final KichThuocRepository kichThuocRepository;
 
     @Override
-    public Page<ChiTietSanPhamResponseDTO> getVariantsByFilter(String keyword, Long idMauSac, Long idKichThuoc, Integer trangThai, BigDecimal minPrice, BigDecimal maxPrice, Pageable pageable) {
-        return chiTietSanPhamRepository.findByFilters(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, pageable);
+    public Page<ChiTietSanPhamResponseDTO> getVariantsByFilter(String keyword, Long idMauSac, Long idKichThuoc, Integer trangThai, BigDecimal minPrice, BigDecimal maxPrice, Long idSanPham, Pageable pageable) {
+        return chiTietSanPhamRepository.findByFilters(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, idSanPham, pageable);
     }
 
     @Override
@@ -39,8 +49,8 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
     }
 
     @Override
-    public byte[] exportToExcel(String keyword, Long idMauSac, Long idKichThuoc, Integer trangThai, BigDecimal minPrice, BigDecimal maxPrice) throws IOException {
-        List<ChiTietSanPhamResponseDTO> variants = chiTietSanPhamRepository.findByFiltersForExcel(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice);
+    public byte[] exportToExcel(String keyword, Long idMauSac, Long idKichThuoc, Integer trangThai, BigDecimal minPrice, BigDecimal maxPrice, Long idSanPham) throws IOException {
+        List<ChiTietSanPhamResponseDTO> variants = chiTietSanPhamRepository.findByFiltersForExcel(keyword, idMauSac, idKichThuoc, trangThai, minPrice, maxPrice, idSanPham);
 
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("DanhSachBienThe");
@@ -114,6 +124,38 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
         ChiTietSanPham variant = chiTietSanPhamRepository.findByMaChiTietSanPham(maChiTietSanPham)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy biến thể nào với mã QR này: " + maChiTietSanPham));
         return toDTO(variant);
+    }
+
+    @Override
+    @Transactional
+    public ChiTietSanPhamResponseDTO createVariant(ChiTietSanPhamCreateRequest request) {
+        SanPham sanPham = sanPhamRepository.findById(request.getIdSanPham())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với id: " + request.getIdSanPham()));
+
+        MauSac mauSac = mauSacRepository.findById(request.getIdMauSac())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy màu sắc với id: " + request.getIdMauSac()));
+
+        KichThuoc kichThuoc = kichThuocRepository.findById(request.getIdKichThuoc())
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy kích thước với id: " + request.getIdKichThuoc()));
+
+        if (chiTietSanPhamRepository.existsBySanPham_IdAndMauSac_IdAndKichThuoc_Id(
+                request.getIdSanPham(), request.getIdMauSac(), request.getIdKichThuoc())) {
+            throw new RuntimeException("Biến thể với màu sắc và kích thước này đã tồn tại cho sản phẩm.");
+        }
+
+        ChiTietSanPham chiTiet = ChiTietSanPham.builder()
+                .sanPham(sanPham)
+                .mauSac(mauSac)
+                .kichThuoc(kichThuoc)
+                .soLuongTon(request.getSoLuongTon())
+                .giaNhap(request.getGiaNhap())
+                .giaBan(request.getGiaBan())
+                .anh(request.getAnh())
+                .trangThai(1)
+                .build();
+
+        ChiTietSanPham saved = chiTietSanPhamRepository.save(chiTiet);
+        return toDTO(saved);
     }
 
     /**

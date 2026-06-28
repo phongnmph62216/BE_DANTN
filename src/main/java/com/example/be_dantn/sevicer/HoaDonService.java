@@ -15,7 +15,7 @@ public interface HoaDonService {
             LocalDateTime tuNgay,
             LocalDateTime denNgay,
             Integer loaiDon,
-            Integer trangThai,
+            List<Integer> trangThai,
             int page,
             int size
     );
@@ -25,7 +25,7 @@ public interface HoaDonService {
             LocalDateTime tuNgay,
             LocalDateTime denNgay,
             Integer loaiDon,
-            Integer trangThai
+            List<Integer> trangThai
     );
 
     HoaDonDetailResponseDTO layChiTietHoaDon(Long id);
