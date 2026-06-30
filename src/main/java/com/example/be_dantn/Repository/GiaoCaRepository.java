@@ -7,4 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface GiaoCaRepository extends JpaRepository<GiaoCa, Long>, JpaSpecificationExecutor<GiaoCa> {
+    java.util.Optional<GiaoCa> findByLichLamViecId(Long lichLamViecId);
+    java.util.Optional<GiaoCa> findFirstByTrangThaiOrderByThoiGianDongCaDesc(Integer trangThai);
 }

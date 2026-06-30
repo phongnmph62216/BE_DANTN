@@ -11,4 +11,6 @@ public interface LichLamViecRepository extends JpaRepository<LichLamViec, Long>,
     boolean existsByNhanVienIdAndNgayLamViecAndCaLamViecId(Long nhanVienId, java.time.LocalDate ngayLamViec, Long caLamViecId);
 
     boolean existsByNhanVienIdAndNgayLamViecAndCaLamViecIdAndIdNot(Long nhanVienId, java.time.LocalDate ngayLamViec, Long caLamViecId, Long id);
+
+    java.util.List<LichLamViec> findByNhanVienIdAndNgayLamViecAndTrangThai(Long nhanVienId, java.time.LocalDate ngayLamViec, Integer trangThai);
 }

@@ -1,8 +1,12 @@
 package com.example.be_dantn.sevicer.impl;
 
 import com.example.be_dantn.Dto.GiaoCaDTO;
+import com.example.be_dantn.Dto.GiaoCaStatusDTO;
+import com.example.be_dantn.Dto.Request.MoCaRequest;
 import com.example.be_dantn.Entity.GiaoCa;
+import com.example.be_dantn.Entity.LichLamViec;
 import com.example.be_dantn.Repository.GiaoCaRepository;
+import com.example.be_dantn.Repository.LichLamViecRepository;
 import com.example.be_dantn.exception.CustomResourceotFoundException;
 import com.example.be_dantn.sevicer.GiaoCaService;
 import jakarta.persistence.criteria.Join;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class GiaoCaServiceImpl implements GiaoCaService {
 
     private final GiaoCaRepository giaoCaRepository;
+    private final LichLamViecRepository lichLamViecRepository;
 
     @Override
     public List<GiaoCaDTO> findAll(String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
@@ -100,5 +105,100 @@ public class GiaoCaServiceImpl implements GiaoCaService {
         }
 
         return builder.build();
+    }
+
+    @Override
+    public GiaoCaStatusDTO getShiftStatus(Long employeeId) {
+        if (employeeId == null) {
+            return GiaoCaStatusDTO.builder()
+                    .hasScheduleToday(false)
+                    .status("NO_SCHEDULE")
+                    .build();
+        }
+
+        java.time.LocalDate today = java.time.LocalDate.now();
+        List<LichLamViec> schedules = lichLamViecRepository.findByNhanVienIdAndNgayLamViecAndTrangThai(employeeId, today, 1);
+
+        if (schedules.isEmpty()) {
+            return GiaoCaStatusDTO.builder()
+                    .hasScheduleToday(false)
+                    .status("NO_SCHEDULE")
+                    .build();
+        }
+
+        // Pick the first schedule
+        LichLamViec schedule = schedules.get(0);
+        String employeeName = schedule.getNhanVien() != null ? schedule.getNhanVien().getHoVaTen() : "Nhân viên";
+        String shiftName = "";
+        if (schedule.getCaLamViec() != null) {
+            shiftName = schedule.getCaLamViec().getTenCa() + " (" + schedule.getCaLamViec().getGioBatDau() + " - " + schedule.getCaLamViec().getGioKetThuc() + ")";
+        }
+
+        java.util.Optional<GiaoCa> existingGiaoCa = giaoCaRepository.findByLichLamViecId(schedule.getId());
+        String status = "NOT_OPENED";
+        Long giaoCaId = null;
+
+        if (existingGiaoCa.isPresent()) {
+            GiaoCa gc = existingGiaoCa.get();
+            giaoCaId = gc.getId();
+            status = gc.getTrangThai() == 0 ? "ACTIVE" : "CLOSED";
+        }
+
+        java.math.BigDecimal prevCash = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal prevBank = java.math.BigDecimal.ZERO;
+
+        if ("NOT_OPENED".equals(status)) {
+            // Find the most recently closed shift
+            java.util.Optional<GiaoCa> lastClosed = giaoCaRepository.findFirstByTrangThaiOrderByThoiGianDongCaDesc(1);
+            if (lastClosed.isPresent()) {
+                java.math.BigDecimal cash = lastClosed.get().getTienMatThucTeChotCa();
+                if (cash != null) {
+                    prevCash = cash;
+                }
+                java.math.BigDecimal bank = lastClosed.get().getTienChuyenKhoanTrongCa();
+                if (bank != null) {
+                    prevBank = bank;
+                }
+            }
+        }
+
+        return GiaoCaStatusDTO.builder()
+                .hasScheduleToday(true)
+                .scheduleId(schedule.getId())
+                .shiftName(shiftName)
+                .employeeName(employeeName)
+                .status(status)
+                .previousShiftCash(prevCash)
+                .previousShiftBank(prevBank)
+                .giaoCaId(giaoCaId)
+                .build();
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public GiaoCaDTO moCa(MoCaRequest request) {
+        if (request.getIdLichLamViec() == null) {
+            throw new IllegalArgumentException("ID lịch làm việc không được để trống");
+        }
+        LichLamViec schedule = lichLamViecRepository.findById(request.getIdLichLamViec())
+                .orElseThrow(() -> new CustomResourceotFoundException("Không tìm thấy lịch làm việc với ID: " + request.getIdLichLamViec()));
+
+        // Check if already exists to prevent duplicate open shifts
+        java.util.Optional<GiaoCa> existing = giaoCaRepository.findByLichLamViecId(schedule.getId());
+        if (existing.isPresent()) {
+            return toDTO(existing.get());
+        }
+
+        GiaoCa gc = GiaoCa.builder()
+                .lichLamViec(schedule)
+                .thoiGianMoCa(LocalDateTime.now())
+                .tienMatDauCa(request.getTienMatDauCa() != null ? request.getTienMatDauCa() : java.math.BigDecimal.ZERO)
+                .tienMatThuTrongCa(java.math.BigDecimal.ZERO)
+                .tienChuyenKhoanTrongCa(java.math.BigDecimal.ZERO)
+                .trangThai(0) // 0 means active/open
+                .build();
+
+        GiaoCa saved = giaoCaRepository.save(gc);
+        return toDTO(saved);
     }
 }

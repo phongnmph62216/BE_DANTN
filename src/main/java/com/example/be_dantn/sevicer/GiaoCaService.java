@@ -10,4 +10,8 @@ public interface GiaoCaService {
     List<GiaoCaDTO> findAll(String keyword, LocalDateTime fromDate, LocalDateTime toDate);
 
     GiaoCaDTO findById(Long id);
+
+    com.example.be_dantn.Dto.GiaoCaStatusDTO getShiftStatus(Long employeeId);
+
+    GiaoCaDTO moCa(com.example.be_dantn.Dto.Request.MoCaRequest request);
 }

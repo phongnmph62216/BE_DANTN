@@ -1,6 +1,8 @@
 package com.example.be_dantn.Controller;
 
 import com.example.be_dantn.Dto.GiaoCaDTO;
+import com.example.be_dantn.Dto.GiaoCaStatusDTO;
+import com.example.be_dantn.Dto.Request.MoCaRequest;
 import com.example.be_dantn.Dto.Response.ResponseObject;
 import com.example.be_dantn.sevicer.GiaoCaService;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,20 @@ import java.util.List;
 public class GiaoCaController {
 
     private final GiaoCaService giaoCaService;
+
+    @GetMapping("/current-status")
+    public ResponseEntity<ResponseObject<GiaoCaStatusDTO>> getShiftStatus(
+            @RequestHeader(value = "X-Employee-Id", required = false) Long employeeId) {
+        GiaoCaStatusDTO dto = giaoCaService.getShiftStatus(employeeId);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Lấy trạng thái giao ca hiện tại thành công", dto));
+    }
+
+    @PostMapping("/mo-ca")
+    public ResponseEntity<ResponseObject<GiaoCaDTO>> moCa(
+            @RequestBody MoCaRequest request) {
+        GiaoCaDTO dto = giaoCaService.moCa(request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Mở ca làm việc thành công", dto));
+    }
 
     @GetMapping
     public ResponseEntity<ResponseObject<List<GiaoCaDTO>>> findAll(
