@@ -8,8 +8,11 @@ DELETE FROM phieu_giam_gia_khach_hang;
 DELETE FROM dia_chi;
 DELETE FROM khach_hang;
 DELETE FROM phieu_giam_gia;
+DELETE FROM giao_ca;
+DELETE FROM lich_lam_viec;
 DELETE FROM nhan_vien;
 DELETE FROM vai_tro;
+DELETE FROM ca_lam_viec;
 DELETE FROM chi_tiet_san_pham;
 DELETE FROM dot_giam_gia;
 DELETE FROM san_pham;
@@ -202,3 +205,25 @@ INSERT INTO hoa_don_chi_tiet (id_hoa_don, id_chi_tiet_san_pham, so_luong, don_gi
 INSERT INTO thanh_toan (id_hoa_don, phuong_thuc, so_tien, thoi_gian, nguoi_thuc_hien, ghi_chu) VALUES
 (1, N'Tiền mặt', 700000.00, CURRENT_TIMESTAMP, N'Trần Tuấn Linh', N'Khách thanh toán đủ'),
 (2, N'Chuyển khoản', 570000.00, CURRENT_TIMESTAMP, N'Hệ thống', N'Đã thanh toán VNPay');
+
+-- Seed data for ca_lam_viec
+INSERT INTO ca_lam_viec (ma_ca, ten_ca, gio_bat_dau, gio_ket_thuc, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
+('CA001', N'Ca sáng', '08:00:00', '12:00:00', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+('CA002', N'Ca chiều', '13:30:00', '17:30:00', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+('CA003', N'Ca tối', '18:00:00', '22:00:00', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system');
+
+-- Seed data for lich_lam_viec
+INSERT INTO lich_lam_viec (id_nhan_vien, id_ca_lam_viec, nguoi_tao_quan_ly, ngay_lam_viec, ghi_chu, trang_thai, ngay_tao, ngay_sua, nguoi_tao, nguoi_sua) VALUES
+(2, 1, 'system', '2026-06-29', N'Trực quầy chính', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+(3, 2, 'system', '2026-06-29', N'Hỗ trợ kho', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+(4, 1, 'system', '2026-06-30', N'Trực quầy chính', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+(2, 2, 'system', '2026-06-30', N'Thu ngân', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+(3, 1, 'system', '2026-07-01', N'Trực quầy chính', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system'),
+(4, 2, 'system', '2026-07-01', N'Thu ngân', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 'system', 'system');
+
+-- Seed data for giao_ca
+INSERT INTO giao_ca (id_lich_lam_viec, id_nguoi_dong_ca, thoi_gian_mo_ca, thoi_gian_dong_ca, tien_mat_dau_ca, tien_mat_thu_trong_ca, tien_chuyen_khoan_trong_ca, tien_mat_thuc_te_chot_ca, tien_chenh_lech, trang_thai) VALUES
+(1, 2, '2026-06-29 08:00:00', '2026-06-29 12:00:00', 300000.00, 0.00, 0.00, 1000000.00, 700000.00, 1),
+(2, NULL, '2026-06-29 13:30:00', '2026-06-29 17:35:00', 1000000.00, 0.00, 0.00, 0.00, -1000000.00, 1),
+(3, NULL, '2026-06-30 08:00:00', NULL, 1000000.00, 0.00, 0.00, NULL, NULL, 0),
+(4, 2, '2026-06-30 13:30:00', '2026-06-30 17:40:00', 100000.00, 100000.00, 0.00, 22222.00, -177778.00, 1);
