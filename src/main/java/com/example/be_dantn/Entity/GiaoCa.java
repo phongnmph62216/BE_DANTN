@@ -42,4 +42,14 @@ public class GiaoCa {
     private BigDecimal tienChenhLech;
 
     private Integer trangThai; // 0: Đang hoạt động, 1: Đã đóng
+
+    private BigDecimal tienGiaoCaSau;
+
+    private Integer trangThaiDoiSoat; // null/0: Chờ đối soát, 1: Đã đối soát, 2: Có sai lệch
+
+    private String phuongAnXuLy; // TRU_LUONG, CHI_PHI_CUA_HANG, KHONG_XU_LY
+
+    private String ghiChuDoiSoat;
+
+    private String ghiChu;
 }

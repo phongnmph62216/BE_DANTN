@@ -14,4 +14,8 @@ public interface GiaoCaService {
     com.example.be_dantn.Dto.GiaoCaStatusDTO getShiftStatus(Long employeeId);
 
     GiaoCaDTO moCa(com.example.be_dantn.Dto.Request.MoCaRequest request);
+
+    GiaoCaDTO chotCa(com.example.be_dantn.Dto.Request.ChotCaRequest request);
+
+    GiaoCaDTO doiSoat(Long id, com.example.be_dantn.Dto.Request.DoiSoatRequest request);
 }

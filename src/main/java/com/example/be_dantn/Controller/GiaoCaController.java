@@ -3,6 +3,8 @@ package com.example.be_dantn.Controller;
 import com.example.be_dantn.Dto.GiaoCaDTO;
 import com.example.be_dantn.Dto.GiaoCaStatusDTO;
 import com.example.be_dantn.Dto.Request.MoCaRequest;
+import com.example.be_dantn.Dto.Request.ChotCaRequest;
+import com.example.be_dantn.Dto.Request.DoiSoatRequest;
 import com.example.be_dantn.Dto.Response.ResponseObject;
 import com.example.be_dantn.sevicer.GiaoCaService;
 import lombok.RequiredArgsConstructor;
@@ -75,5 +77,19 @@ public class GiaoCaController {
     public ResponseEntity<ResponseObject<GiaoCaDTO>> findById(@PathVariable Long id) {
         GiaoCaDTO dto = giaoCaService.findById(id);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Lấy thông tin chi tiết giao ca thành công", dto));
+    }
+
+    @PostMapping("/chot-ca")
+    public ResponseEntity<ResponseObject<GiaoCaDTO>> chotCa(@RequestBody ChotCaRequest request) {
+        GiaoCaDTO dto = giaoCaService.chotCa(request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Chốt ca làm việc thành công", dto));
+    }
+
+    @PutMapping("/doi-soat/{id}")
+    public ResponseEntity<ResponseObject<GiaoCaDTO>> doiSoat(
+            @PathVariable Long id,
+            @RequestBody DoiSoatRequest request) {
+        GiaoCaDTO dto = giaoCaService.doiSoat(id, request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Đối soát ca trực thành công", dto));
     }
 }

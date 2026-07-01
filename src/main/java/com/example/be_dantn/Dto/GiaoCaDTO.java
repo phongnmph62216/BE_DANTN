@@ -46,4 +46,14 @@ public class GiaoCaDTO {
     private BigDecimal tienChenhLech;
 
     private Integer trangThai;
+
+    private BigDecimal tienGiaoCaSau;
+
+    private Integer trangThaiDoiSoat;
+
+    private String phuongAnXuLy;
+
+    private String ghiChuDoiSoat;
+
+    private String ghiChu;
 }

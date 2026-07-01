@@ -23,4 +23,19 @@ public interface ThanhToanRepository extends JpaRepository<ThanhToan, Long> {
             WHERE tt.hoaDon.id = :idHoaDon
             """)
     List<ThanhToanDTO> findByIdHoaDon(@Param("idHoaDon") Long idHoaDon);
+
+    @Query("""
+            SELECT tt
+            FROM ThanhToan tt
+            LEFT JOIN tt.hoaDon hd
+            WHERE (hd.nhanVien.id = :nhanVienId OR tt.nguoiThucHien = :hoVaTen)
+              AND tt.thoiGian >= :start
+              AND tt.thoiGian <= :end
+            """)
+    List<ThanhToan> findByNhanVienAndThoiGian(
+            @Param("nhanVienId") Long nhanVienId,
+            @Param("hoVaTen") String hoVaTen,
+            @Param("start") java.time.LocalDateTime start,
+            @Param("end") java.time.LocalDateTime end
+    );
 }

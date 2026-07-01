@@ -17,6 +17,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import com.example.be_dantn.Dto.Request.ChotCaRequest;
+import com.example.be_dantn.Dto.Request.DoiSoatRequest;
+import com.example.be_dantn.Entity.NhanVien;
+import com.example.be_dantn.Entity.ThanhToan;
+import com.example.be_dantn.Repository.NhanVienRepository;
+import com.example.be_dantn.repository.ThanhToanRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +35,9 @@ public class GiaoCaServiceImpl implements GiaoCaService {
 
     private final GiaoCaRepository giaoCaRepository;
     private final LichLamViecRepository lichLamViecRepository;
+    private final NhanVienRepository nhanVienRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final ThanhToanRepository thanhToanRepository;
 
     @Override
     public List<GiaoCaDTO> findAll(String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
@@ -85,7 +95,12 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 .tienChuyenKhoanTrongCa(entity.getTienChuyenKhoanTrongCa())
                 .tienMatThucTeChotCa(entity.getTienMatThucTeChotCa())
                 .tienChenhLech(entity.getTienChenhLech())
-                .trangThai(entity.getTrangThai());
+                .trangThai(entity.getTrangThai())
+                .tienGiaoCaSau(entity.getTienGiaoCaSau())
+                .trangThaiDoiSoat(entity.getTrangThaiDoiSoat())
+                .phuongAnXuLy(entity.getPhuongAnXuLy())
+                .ghiChuDoiSoat(entity.getGhiChuDoiSoat())
+                .ghiChu(entity.getGhiChu());
 
         if (entity.getLichLamViec() != null) {
             builder.idLichLamViec(entity.getLichLamViec().getId());
@@ -126,28 +141,105 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                     .build();
         }
 
-        // Pick the first schedule
-        LichLamViec schedule = schedules.get(0);
+        // Pick the most relevant schedule for today (active shift has highest priority, then not opened, then closed)
+        LichLamViec schedule = null;
+        java.util.Optional<GiaoCa> existingGiaoCa = java.util.Optional.empty();
+        
+        GiaoCa activeGc = null;
+        LichLamViec activeSchedule = null;
+        GiaoCa closedGc = null;
+        LichLamViec closedSchedule = null;
+        LichLamViec notOpenedSchedule = null;
+
+        for (LichLamViec s : schedules) {
+            java.util.Optional<GiaoCa> gcOpt = giaoCaRepository.findByLichLamViecId(s.getId());
+            if (gcOpt.isPresent()) {
+                GiaoCa gc = gcOpt.get();
+                if (gc.getTrangThai() == 0) {
+                    activeGc = gc;
+                    activeSchedule = s;
+                    break; // Found active shift, stop searching
+                } else {
+                    closedGc = gc;
+                    closedSchedule = s;
+                }
+            } else {
+                if (notOpenedSchedule == null) {
+                    notOpenedSchedule = s;
+                }
+            }
+        }
+
+        if (activeGc != null) {
+            schedule = activeSchedule;
+            existingGiaoCa = java.util.Optional.of(activeGc);
+        } else if (notOpenedSchedule != null) {
+            schedule = notOpenedSchedule;
+            existingGiaoCa = java.util.Optional.empty();
+        } else if (closedSchedule != null) {
+            schedule = closedSchedule;
+            existingGiaoCa = java.util.Optional.of(closedGc);
+        } else {
+            schedule = schedules.get(0);
+            existingGiaoCa = java.util.Optional.empty();
+        }
+
         String employeeName = schedule.getNhanVien() != null ? schedule.getNhanVien().getHoVaTen() : "Nhân viên";
         String shiftName = "";
         if (schedule.getCaLamViec() != null) {
             shiftName = schedule.getCaLamViec().getTenCa() + " (" + schedule.getCaLamViec().getGioBatDau() + " - " + schedule.getCaLamViec().getGioKetThuc() + ")";
         }
-
-        java.util.Optional<GiaoCa> existingGiaoCa = giaoCaRepository.findByLichLamViecId(schedule.getId());
         String status = "NOT_OPENED";
         Long giaoCaId = null;
+        java.math.BigDecimal prevCash = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal prevBank = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal cashRevenue = java.math.BigDecimal.ZERO;
+        java.math.BigDecimal bankRevenue = java.math.BigDecimal.ZERO;
 
         if (existingGiaoCa.isPresent()) {
             GiaoCa gc = existingGiaoCa.get();
             giaoCaId = gc.getId();
             status = gc.getTrangThai() == 0 ? "ACTIVE" : "CLOSED";
-        }
+            
+            if ("ACTIVE".equals(status)) {
+                String hoVaTen = "";
+                if (schedule.getNhanVien() != null) {
+                    hoVaTen = schedule.getNhanVien().getHoVaTen();
+                } else {
+                    NhanVien nv = nhanVienRepository.findById(employeeId).orElse(null);
+                    if (nv != null) {
+                        hoVaTen = nv.getHoVaTen();
+                    }
+                }
+                if (hoVaTen == null) {
+                    hoVaTen = "";
+                }
 
-        java.math.BigDecimal prevCash = java.math.BigDecimal.ZERO;
-        java.math.BigDecimal prevBank = java.math.BigDecimal.ZERO;
-
-        if ("NOT_OPENED".equals(status)) {
+                // Calculate dynamic revenues from ThanhToan records since open time
+                List<ThanhToan> payments = thanhToanRepository.findByNhanVienAndThoiGian(
+                        employeeId, hoVaTen, gc.getThoiGianMoCa(), java.time.LocalDateTime.now()
+                );
+                for (ThanhToan pt : payments) {
+                    String method = pt.getPhuongThuc() != null ? pt.getPhuongThuc().trim() : "";
+                    if ("1".equals(method)) {
+                        cashRevenue = cashRevenue.add(pt.getSoTien() != null ? pt.getSoTien() : java.math.BigDecimal.ZERO);
+                    } else if ("2".equals(method)) {
+                        bankRevenue = bankRevenue.add(pt.getSoTien() != null ? pt.getSoTien() : java.math.BigDecimal.ZERO);
+                    }
+                }
+                gc.setTienMatThuTrongCa(cashRevenue);
+                gc.setTienChuyenKhoanTrongCa(bankRevenue);
+                giaoCaRepository.save(gc);
+                
+                prevCash = gc.getTienMatDauCa() != null ? gc.getTienMatDauCa() : java.math.BigDecimal.ZERO;
+                prevBank = gc.getTienChuyenKhoanTrongCa() != null ? gc.getTienChuyenKhoanTrongCa() : java.math.BigDecimal.ZERO;
+            } else {
+                prevCash = gc.getTienMatDauCa() != null ? gc.getTienMatDauCa() : java.math.BigDecimal.ZERO;
+                prevBank = gc.getTienChuyenKhoanTrongCa() != null ? gc.getTienChuyenKhoanTrongCa() : java.math.BigDecimal.ZERO;
+                cashRevenue = gc.getTienMatThuTrongCa() != null ? gc.getTienMatThuTrongCa() : java.math.BigDecimal.ZERO;
+                bankRevenue = gc.getTienChuyenKhoanTrongCa() != null ? gc.getTienChuyenKhoanTrongCa() : java.math.BigDecimal.ZERO;
+            }
+        } else {
             // Find the most recently closed shift
             java.util.Optional<GiaoCa> lastClosed = giaoCaRepository.findFirstByTrangThaiOrderByThoiGianDongCaDesc(1);
             if (lastClosed.isPresent()) {
@@ -171,6 +263,8 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 .previousShiftCash(prevCash)
                 .previousShiftBank(prevBank)
                 .giaoCaId(giaoCaId)
+                .tienMatThuTrongCa(cashRevenue)
+                .tienChuyenKhoanTrongCa(bankRevenue)
                 .build();
     }
 
@@ -197,6 +291,50 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 .tienChuyenKhoanTrongCa(java.math.BigDecimal.ZERO)
                 .trangThai(0) // 0 means active/open
                 .build();
+
+        GiaoCa saved = giaoCaRepository.save(gc);
+        return toDTO(saved);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public GiaoCaDTO chotCa(ChotCaRequest request) {
+        if (request.getIdGiaoCa() == null) {
+            throw new IllegalArgumentException("ID giao ca không được để trống");
+        }
+        GiaoCa gc = giaoCaRepository.findById(request.getIdGiaoCa())
+                .orElseThrow(() -> new CustomResourceotFoundException("Không tìm thấy giao ca với ID: " + request.getIdGiaoCa()));
+
+        if (gc.getTrangThai() == 1) {
+            throw new IllegalStateException("Ca làm việc này đã được chốt trước đó.");
+        }
+
+        gc.setThoiGianDongCa(LocalDateTime.now());
+        gc.setTienMatThucTeChotCa(request.getTienMatThucTeChotCa() != null ? request.getTienMatThucTeChotCa() : java.math.BigDecimal.ZERO);
+        gc.setTienChuyenKhoanTrongCa(request.getTienChuyenKhoanTrongCa() != null ? request.getTienChuyenKhoanTrongCa() : java.math.BigDecimal.ZERO);
+        gc.setTienChenhLech(request.getTienChenhLech() != null ? request.getTienChenhLech() : java.math.BigDecimal.ZERO);
+        gc.setTienGiaoCaSau(request.getTienGiaoCaSau() != null ? request.getTienGiaoCaSau() : java.math.BigDecimal.ZERO);
+        gc.setGhiChu(request.getGhiChu());
+        gc.setTrangThai(1); // Closed
+        gc.setTrangThaiDoiSoat(0); // Awaiting Audit
+
+        GiaoCa saved = giaoCaRepository.save(gc);
+        return toDTO(saved);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public GiaoCaDTO doiSoat(Long id, DoiSoatRequest request) {
+        GiaoCa gc = giaoCaRepository.findById(id)
+                .orElseThrow(() -> new CustomResourceotFoundException("Không tìm thấy ca trực với ID: " + id));
+
+        if (gc.getTrangThai() == 0) {
+            throw new IllegalStateException("Ca trực này chưa đóng, không thể thực hiện đối soát.");
+        }
+
+        gc.setTrangThaiDoiSoat(request.getTrangThaiDoiSoat() != null ? request.getTrangThaiDoiSoat() : 1);
+        gc.setPhuongAnXuLy(request.getPhuongAnXuLy());
+        gc.setGhiChuDoiSoat(request.getGhiChuDoiSoat());
 
         GiaoCa saved = giaoCaRepository.save(gc);
         return toDTO(saved);

@@ -19,4 +19,6 @@ public class GiaoCaStatusDTO {
     private BigDecimal previousShiftCash;
     private BigDecimal previousShiftBank;
     private Long giaoCaId;
+    private BigDecimal tienMatThuTrongCa;
+    private BigDecimal tienChuyenKhoanTrongCa;
 }
