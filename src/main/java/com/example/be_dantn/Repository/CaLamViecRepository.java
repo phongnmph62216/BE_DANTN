@@ -15,4 +15,6 @@ public interface CaLamViecRepository extends JpaRepository<CaLamViec, Long>, Jpa
     boolean existsByMaCa(String maCa);
 
     boolean existsByMaCaAndIdNot(String maCa, Long id);
+
+    java.util.Optional<CaLamViec> findByMaCa(String maCa);
 }

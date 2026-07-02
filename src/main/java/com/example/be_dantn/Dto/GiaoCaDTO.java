@@ -18,6 +18,8 @@ public class GiaoCaDTO {
 
     private Long idLichLamViec;
 
+    private Long idCaLamViec;
+
     // Derived from LichLamViec -> NhanVien & CaLamViec
     private String maNhanVienNhanCa;
     private String tenNhanVienNhanCa;
@@ -56,4 +58,6 @@ public class GiaoCaDTO {
     private String ghiChuDoiSoat;
 
     private String ghiChu;
+
+    private BigDecimal tienMatChiRa;
 }

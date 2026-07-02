@@ -16,4 +16,8 @@ public interface LichLamViecService {
     LichLamViecDTO update(Long id, LichLamViecDTO dto);
 
     void delete(Long id);
+
+    byte[] downloadTemplate() throws java.io.IOException;
+
+    String importExcel(org.springframework.web.multipart.MultipartFile file) throws java.io.IOException;
 }

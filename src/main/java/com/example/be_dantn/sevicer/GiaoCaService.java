@@ -18,4 +18,8 @@ public interface GiaoCaService {
     GiaoCaDTO chotCa(com.example.be_dantn.Dto.Request.ChotCaRequest request);
 
     GiaoCaDTO doiSoat(Long id, com.example.be_dantn.Dto.Request.DoiSoatRequest request);
+
+    com.example.be_dantn.Dto.PhieuChiDTO createPhieuChi(com.example.be_dantn.Dto.Request.CreatePhieuChiRequest request);
+
+    List<com.example.be_dantn.Dto.PhieuChiDTO> getPhieuChis(Long idGiaoCa);
 }

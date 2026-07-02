@@ -21,4 +21,9 @@ public class GiaoCaStatusDTO {
     private Long giaoCaId;
     private BigDecimal tienMatThuTrongCa;
     private BigDecimal tienChuyenKhoanTrongCa;
+    private java.time.LocalDate ngayLamViec;
+    private java.time.LocalTime gioBatDau;
+    private java.time.LocalTime gioKetThuc;
+
+    private BigDecimal tienMatChiRa;
 }

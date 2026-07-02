@@ -80,6 +80,7 @@ public class AuthController {
                             .sdt(nv.getSoDienThoai())
                             .email(nv.getEmail())
                             .role(role)
+                            .anh(nv.getAnh())
                             .build();
                     return ResponseEntity.ok(new ResponseObject<>("success", "Đăng nhập thành công", responseData));
                 }

@@ -65,4 +65,22 @@ public class LichLamViecController {
         lichLamViecService.delete(id);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Xóa lịch làm việc thành công", null));
     }
+
+    @GetMapping("/download-template")
+    public ResponseEntity<org.springframework.core.io.ByteArrayResource> downloadTemplate() throws java.io.IOException {
+        byte[] data = lichLamViecService.downloadTemplate();
+        org.springframework.core.io.ByteArrayResource resource = new org.springframework.core.io.ByteArrayResource(data);
+
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=mau_import_lich_lam_viec.xlsx")
+                .contentType(org.springframework.http.MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(resource);
+    }
+
+    @PostMapping("/import-excel")
+    public ResponseEntity<ResponseObject<String>> importExcel(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file) throws java.io.IOException {
+        String result = lichLamViecService.importExcel(file);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Nhập Excel lịch làm việc hoàn tất", result));
+    }
 }

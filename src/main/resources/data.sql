@@ -169,7 +169,7 @@ INSERT INTO nhan_vien (id_vai_tro, ma_nhan_vien, ho_va_ten, so_dien_thoai, email
 (1, 'NV001', N'Trần Tuấn Linh', '0987657326', 'linhtt@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765432', 1, '1995-04-12', N'123 Nguyễn Văn Linh, Quận 7, TP.HCM', 1, '2023-01-15', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
 (2, 'NV002', N'Nguyễn Thị Hương', '0912745678', 'huongnt@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765433', 0, '1998-05-12', N'45 Lê Lợi, Quận 1, TP.HCM', 1, '2023-03-20', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
 (2, 'NV003', N'Lê Văn Minh', '0933475566', 'minhlv@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765434', 1, '1992-10-05', N'89 Trần Hưng Đạo, Quận 5, TP.HCM', 1, '2023-06-01', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, ''),
-(2, 'NV004', N'Phạm Văn Đức', '0978889900', 'ducpv@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 0, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
+(2, 'NV004', N'Phạm Văn Đức', '0978889900', 'ducpv@beestylish.com', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW', '001098765435', 1, '1997-08-25', N'22 Tôn Đức Thắng, Quận 1, TP.HCM', 1, '2022-09-10', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '');
 
 -- Seed data for hoa_don
 INSERT INTO hoa_don (id_nhan_vien, id_khach_hang, id_phieu_giam_gia, ma_hoa_don, loai_hoa_don, so_tien_goc, so_tien_giam, phi_van_chuyen, tong_tien_thanh_toan, ten_khach_hang, dia_chi_khach_hang, so_dien_thoai, trang_thai, ngay_tao, ghi_chu) VALUES

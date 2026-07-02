@@ -92,4 +92,18 @@ public class GiaoCaController {
         GiaoCaDTO dto = giaoCaService.doiSoat(id, request);
         return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Đối soát ca trực thành công", dto));
     }
+
+    @PostMapping("/phieu-chi")
+    public ResponseEntity<ResponseObject<com.example.be_dantn.Dto.PhieuChiDTO>> createPhieuChi(
+            @RequestBody com.example.be_dantn.Dto.Request.CreatePhieuChiRequest request) {
+        com.example.be_dantn.Dto.PhieuChiDTO dto = giaoCaService.createPhieuChi(request);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Tạo phiếu chi thành công", dto));
+    }
+
+    @GetMapping("/phieu-chi/{idGiaoCa}")
+    public ResponseEntity<ResponseObject<List<com.example.be_dantn.Dto.PhieuChiDTO>>> getPhieuChis(
+            @PathVariable Long idGiaoCa) {
+        List<com.example.be_dantn.Dto.PhieuChiDTO> list = giaoCaService.getPhieuChis(idGiaoCa);
+        return ResponseEntity.ok(new ResponseObject<>(HttpStatus.OK, "Lấy danh sách phiếu chi thành công", list));
+    }
 }

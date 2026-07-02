@@ -38,6 +38,7 @@ public class GiaoCaServiceImpl implements GiaoCaService {
     private final NhanVienRepository nhanVienRepository;
     private final PasswordEncoder passwordEncoder;
     private final ThanhToanRepository thanhToanRepository;
+    private final com.example.be_dantn.Repository.PhieuChiRepository phieuChiRepository;
 
     @Override
     public List<GiaoCaDTO> findAll(String keyword, LocalDateTime fromDate, LocalDateTime toDate) {
@@ -86,6 +87,13 @@ public class GiaoCaServiceImpl implements GiaoCaService {
     }
 
     private GiaoCaDTO toDTO(GiaoCa entity) {
+        java.math.BigDecimal tienMatChiRa = java.math.BigDecimal.ZERO;
+        if (entity.getId() != null) {
+            tienMatChiRa = phieuChiRepository.findByGiaoCaId(entity.getId()).stream()
+                    .map(pc -> pc.getSoTien() != null ? pc.getSoTien() : java.math.BigDecimal.ZERO)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        }
+
         GiaoCaDTO.GiaoCaDTOBuilder builder = GiaoCaDTO.builder()
                 .id(entity.getId())
                 .thoiGianMoCa(entity.getThoiGianMoCa())
@@ -100,7 +108,8 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 .trangThaiDoiSoat(entity.getTrangThaiDoiSoat())
                 .phuongAnXuLy(entity.getPhuongAnXuLy())
                 .ghiChuDoiSoat(entity.getGhiChuDoiSoat())
-                .ghiChu(entity.getGhiChu());
+                .ghiChu(entity.getGhiChu())
+                .tienMatChiRa(tienMatChiRa);
 
         if (entity.getLichLamViec() != null) {
             builder.idLichLamViec(entity.getLichLamViec().getId());
@@ -109,6 +118,7 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 builder.tenNhanVienNhanCa(entity.getLichLamViec().getNhanVien().getHoVaTen());
             }
             if (entity.getLichLamViec().getCaLamViec() != null) {
+                builder.idCaLamViec(entity.getLichLamViec().getCaLamViec().getId());
                 builder.tenCa(entity.getLichLamViec().getCaLamViec().getTenCa());
             }
         }
@@ -254,6 +264,13 @@ public class GiaoCaServiceImpl implements GiaoCaService {
             }
         }
 
+        java.math.BigDecimal expenses = java.math.BigDecimal.ZERO;
+        if (giaoCaId != null) {
+            expenses = phieuChiRepository.findByGiaoCaId(giaoCaId).stream()
+                    .map(pc -> pc.getSoTien() != null ? pc.getSoTien() : java.math.BigDecimal.ZERO)
+                    .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        }
+
         return GiaoCaStatusDTO.builder()
                 .hasScheduleToday(true)
                 .scheduleId(schedule.getId())
@@ -265,6 +282,10 @@ public class GiaoCaServiceImpl implements GiaoCaService {
                 .giaoCaId(giaoCaId)
                 .tienMatThuTrongCa(cashRevenue)
                 .tienChuyenKhoanTrongCa(bankRevenue)
+                .ngayLamViec(schedule.getNgayLamViec())
+                .gioBatDau(schedule.getCaLamViec() != null ? schedule.getCaLamViec().getGioBatDau() : null)
+                .gioKetThuc(schedule.getCaLamViec() != null ? schedule.getCaLamViec().getGioKetThuc() : null)
+                .tienMatChiRa(expenses)
                 .build();
     }
 
@@ -309,6 +330,26 @@ public class GiaoCaServiceImpl implements GiaoCaService {
             throw new IllegalStateException("Ca làm việc này đã được chốt trước đó.");
         }
 
+        // Validate that the shift end time has passed
+        LichLamViec schedule = gc.getLichLamViec();
+        if (schedule != null && schedule.getCaLamViec() != null) {
+            com.example.be_dantn.Entity.CaLamViec ca = schedule.getCaLamViec();
+            java.time.LocalDate date = schedule.getNgayLamViec();
+            java.time.LocalTime start = ca.getGioBatDau();
+            java.time.LocalTime end = ca.getGioKetThuc();
+            if (date != null && end != null) {
+                LocalDateTime endDateTime = LocalDateTime.of(date, end);
+                if (start != null && end.isBefore(start)) {
+                    // Overnight shift ends on the next day
+                    endDateTime = endDateTime.plusDays(1);
+                }
+                if (LocalDateTime.now().isBefore(endDateTime)) {
+                    String endStr = end.toString().substring(0, 5);
+                    throw new IllegalStateException("Không thể chốt ca trước giờ kết thúc ca (" + endStr + ").");
+                }
+            }
+        }
+
         gc.setThoiGianDongCa(LocalDateTime.now());
         gc.setTienMatThucTeChotCa(request.getTienMatThucTeChotCa() != null ? request.getTienMatThucTeChotCa() : java.math.BigDecimal.ZERO);
         gc.setTienChuyenKhoanTrongCa(request.getTienChuyenKhoanTrongCa() != null ? request.getTienChuyenKhoanTrongCa() : java.math.BigDecimal.ZERO);
@@ -338,5 +379,95 @@ public class GiaoCaServiceImpl implements GiaoCaService {
 
         GiaoCa saved = giaoCaRepository.save(gc);
         return toDTO(saved);
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public com.example.be_dantn.Dto.PhieuChiDTO createPhieuChi(com.example.be_dantn.Dto.Request.CreatePhieuChiRequest request) {
+        if (request.getIdGiaoCa() == null) {
+            throw new IllegalArgumentException("ID giao ca không được để trống");
+        }
+        if (request.getSoTien() == null || request.getSoTien().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Số tiền chi phải lớn hơn 0");
+        }
+        if (request.getLyDo() == null || request.getLyDo().trim().isEmpty()) {
+            throw new IllegalArgumentException("Lý do chi không được để trống");
+        }
+
+        GiaoCa gc = giaoCaRepository.findById(request.getIdGiaoCa())
+                .orElseThrow(() -> new CustomResourceotFoundException("Không tìm thấy ca giao ca với ID: " + request.getIdGiaoCa()));
+
+        if (gc.getTrangThai() == 1) {
+            throw new IllegalStateException("Ca giao ca này đã đóng, không thể chi thêm tiền.");
+        }
+
+        // Dynamic calculation of latest cash revenue to ensure correctness
+        java.math.BigDecimal cashRevenue = java.math.BigDecimal.ZERO;
+        LichLamViec schedule = gc.getLichLamViec();
+        if (schedule != null) {
+            NhanVien nv = schedule.getNhanVien();
+            Long empId = nv != null ? nv.getId() : null;
+            String hoVaTen = nv != null ? nv.getHoVaTen() : "";
+            if (empId != null) {
+                List<ThanhToan> payments = thanhToanRepository.findByNhanVienAndThoiGian(
+                        empId, hoVaTen, gc.getThoiGianMoCa(), java.time.LocalDateTime.now()
+                );
+                for (ThanhToan pt : payments) {
+                    String method = pt.getPhuongThuc() != null ? pt.getPhuongThuc().trim() : "";
+                    if ("1".equals(method)) {
+                        cashRevenue = cashRevenue.add(pt.getSoTien() != null ? pt.getSoTien() : java.math.BigDecimal.ZERO);
+                    }
+                }
+                gc.setTienMatThuTrongCa(cashRevenue);
+                giaoCaRepository.save(gc);
+            }
+        }
+
+        java.math.BigDecimal tienMatDauCa = gc.getTienMatDauCa() != null ? gc.getTienMatDauCa() : java.math.BigDecimal.ZERO;
+
+        java.math.BigDecimal currentExpenses = phieuChiRepository.findByGiaoCaId(gc.getId()).stream()
+                .map(pc -> pc.getSoTien() != null ? pc.getSoTien() : java.math.BigDecimal.ZERO)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        java.math.BigDecimal maxAllowedExpense = tienMatDauCa.subtract(currentExpenses);
+
+        if (request.getSoTien().compareTo(maxAllowedExpense) > 0) {
+            throw new IllegalStateException("Số tiền chi vượt quá số tiền cốp hiện có. Số tiền có thể chi tối đa là: " + 
+                new java.text.DecimalFormat("#,###").format(maxAllowedExpense) + " đ");
+        }
+
+        com.example.be_dantn.Entity.PhieuChi pc = com.example.be_dantn.Entity.PhieuChi.builder()
+                .giaoCa(gc)
+                .soTien(request.getSoTien())
+                .lyDo(request.getLyDo())
+                .nguoiTao(request.getNguoiTao() != null ? request.getNguoiTao() : "Hệ thống")
+                .build();
+
+        com.example.be_dantn.Entity.PhieuChi saved = phieuChiRepository.save(pc);
+
+        return com.example.be_dantn.Dto.PhieuChiDTO.builder()
+                .id(saved.getId())
+                .idGiaoCa(gc.getId())
+                .maPhieu(saved.getMaPhieu())
+                .ngayTao(saved.getNgayTao())
+                .soTien(saved.getSoTien())
+                .lyDo(saved.getLyDo())
+                .nguoiTao(saved.getNguoiTao())
+                .build();
+    }
+
+    @Override
+    public List<com.example.be_dantn.Dto.PhieuChiDTO> getPhieuChis(Long idGiaoCa) {
+        return phieuChiRepository.findByGiaoCaId(idGiaoCa).stream()
+                .map(pc -> com.example.be_dantn.Dto.PhieuChiDTO.builder()
+                        .id(pc.getId())
+                        .idGiaoCa(idGiaoCa)
+                        .maPhieu(pc.getMaPhieu())
+                        .ngayTao(pc.getNgayTao())
+                        .soTien(pc.getSoTien())
+                        .lyDo(pc.getLyDo())
+                        .nguoiTao(pc.getNguoiTao())
+                        .build())
+                .collect(Collectors.toList());
     }
 }

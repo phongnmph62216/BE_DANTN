@@ -54,4 +54,5 @@ public interface NhanVienRepository extends JpaRepository<NhanVien, Long> {
     boolean existsByCccd(String cccd);
     Optional<NhanVien> findBySoDienThoai(String soDienThoai);
     Optional<NhanVien> findByEmail(String email);
+    Optional<NhanVien> findByMaNhanVien(String maNhanVien);
 }
