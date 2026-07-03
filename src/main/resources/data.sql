@@ -134,7 +134,7 @@ INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id
 INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh, trang_thai, ngay_tao, ngay_sua, ten_tai_khoan, mat_khau) VALUES
 ('KH001', N'Nguyễn Văn An', '0987657321', 'an.nguyen@example.com', 1, '1990-05-15', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0987654321', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
 ('KH002', N'Trần Thị Bình', '0912345778', 'binh.tran@example.com', 0, '1995-08-20', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0912345678', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
-('KH003', N'Lê Văn Cường', '0333474555', 'cuong.le@example.com', 1, '1988-11-30', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0333444555', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
+('KH003', N'Lê Văn Cường', '0333474555', 'cuong.le@example.com', 1, '1988-11-30', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0333444555', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW'),
 ('KH004', N'Phạm Thị Dung', '0777878999', 'dung.pham@example.com', 0, '2001-02-10', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, '0777888999', '$2a$10$lB6/PKg2/JC4XgdMDXyjs.dLC9jFNAuuNbFkL9udcXe/EBjxSyqxW');
 
 -- Seed data for dia_chi
