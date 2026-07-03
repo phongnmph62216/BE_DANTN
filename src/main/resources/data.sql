@@ -1,4 +1,6 @@
 -- Clean existing data to prevent duplicate key constraint violations on dev restarts
+DELETE FROM chat_message;
+DELETE FROM chat_session;
 DELETE FROM thong_bao;
 DELETE FROM thanh_toan;
 DELETE FROM hoa_don_chi_tiet;
@@ -227,3 +229,27 @@ INSERT INTO giao_ca (id_lich_lam_viec, id_nguoi_dong_ca, thoi_gian_mo_ca, thoi_g
 (2, NULL, '2026-06-29 13:30:00', '2026-06-29 17:35:00', 1000000.00, 0.00, 0.00, 0.00, -1000000.00, 1),
 (3, NULL, '2026-06-30 08:00:00', NULL, 1000000.00, 0.00, 0.00, NULL, NULL, 0),
 (4, 2, '2026-06-30 13:30:00', '2026-06-30 17:40:00', 100000.00, 100000.00, 0.00, 22222.00, -177778.00, 1);
+
+-- Seed data for chat_session
+INSERT INTO chat_session (session_code, id_khach_hang, visitor_name, trang_thai, id_nhan_vien, ngay_tao, ngay_sua, ngay_cap_nhat_cuoi) VALUES
+('sess-waiting-001', 1, N'Nguyễn Văn An', 0, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('sess-active-001', 2, N'Trần Thị Bình', 1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('sess-closed-001', NULL, N'Khách vãng lai #1234', 2, 3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Seed data for chat_message
+INSERT INTO chat_message (id_chat_session, sender_type, sender_id, sender_name, noi_dung, ngay_tao) VALUES
+(1, 'CUSTOMER', 1, N'Nguyễn Văn An', N'Tôi muốn nói chuyện với nhân viên hỗ trợ.', CURRENT_TIMESTAMP),
+(1, 'CUSTOMER', 1, N'Nguyễn Văn An', N'Cho tôi hỏi về đợt khuyến mãi mới nhất', CURRENT_TIMESTAMP),
+(2, 'CUSTOMER', 2, N'Trần Thị Bình', N'Tôi muốn nói chuyện với nhân viên hỗ trợ.', CURRENT_TIMESTAMP),
+(2, 'SYSTEM', NULL, N'Hệ thống', N'Nhân viên Nguyễn Thị Hương (Mã: NV002) đã tiếp nhận hỗ trợ bạn.', CURRENT_TIMESTAMP),
+(2, 'CUSTOMER', 2, N'Trần Thị Bình', N'Tôi muốn đổi size áo đã mua hôm qua', CURRENT_TIMESTAMP),
+(2, 'STAFF', 2, N'Nguyễn Thị Hương', N'Dạ chào chị Bình! Em xin kiểm tra thông tin đơn hàng cho chị ạ. Chị vui lòng cho em mã đơn hàng nhé?', CURRENT_TIMESTAMP),
+(3, 'CUSTOMER', NULL, N'Khách vãng lai #1234', N'Tôi muốn nói chuyện với nhân viên hỗ trợ.', CURRENT_TIMESTAMP),
+(3, 'SYSTEM', NULL, N'Hệ thống', N'Nhân viên Lê Văn Minh (Mã: NV003) đã tiếp nhận hỗ trợ bạn.', CURRENT_TIMESTAMP),
+(3, 'CUSTOMER', NULL, N'Khách vãng lai #1234', N'Shop có bán áo polo size XXL không ạ?', CURRENT_TIMESTAMP),
+(3, 'STAFF', 3, N'Lê Văn Minh', N'Dạ chào anh/chị! Bên em có áo polo size XXL ạ. Anh/chị có thể xem tại mục Sản phẩm nhé.', CURRENT_TIMESTAMP),
+(3, 'SYSTEM', NULL, N'Hệ thống', N'Phiên hỗ trợ đã đóng.', CURRENT_TIMESTAMP);
+
+-- Seed notification for waiting chat session
+INSERT INTO thong_bao (tieu_de, noi_dung, ma_hoa_don, id_hoa_don, trang_thai, ngay_tao) VALUES
+(N'Có tin nhắn mới', N'Khách Nguyễn Văn An vừa gửi tin nhắn ở phiên #1: Cho tôi hỏi về đợt khuyến mãi mới nhất', NULL, NULL, 0, CURRENT_TIMESTAMP);
