@@ -7,10 +7,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Repository
 public interface ThanhToanRepository extends JpaRepository<ThanhToan, Long> {
+
+    @Query("SELECT COALESCE(SUM(tt.soTien), 0) FROM ThanhToan tt WHERE tt.hoaDon.id = :idHoaDon")
+    BigDecimal sumSoTienByHoaDonId(@Param("idHoaDon") Long idHoaDon);
     @Query("""
             SELECT new com.example.be_dantn.Dto.Response.ThanhToanDTO(
                 tt.phuongThuc,

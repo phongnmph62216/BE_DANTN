@@ -115,20 +115,27 @@ public class ChatbotServiceImpl implements ChatbotService {
                 ));
             }
 
-            // 4. Define system instructions
+            // 4. Define system instructions (with realtime timestamp for data freshness)
+            String timestamp = java.time.LocalDateTime.now()
+                    .format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
             String systemInstructionText = "Bạn là Trợ lý AI (tên: BeeBot) của cửa hàng thời trang Bee Stylish.\n" +
                     "Cửa hàng bán các sản phẩm thời trang phong cách tối giản, thanh lịch, chất lượng.\n" +
                     "Dưới đây là thông tin cửa hàng:\n" +
                     "- Địa chỉ:  Trịnh Văn Bô,Nam Từ Liêm,Cầu Giấy, TP. Hà Nội\n" +
                     "- Hotline: 1900 123 456\n" +
                     "- Email: hello@beestylish.com\n\n" +
+                    "⚠️ DỮ LIỆU REALTIME (Cập nhật lúc " + timestamp + "):\n" +
+                    "QUAN TRỌNG: Dữ liệu sản phẩm và voucher bên dưới là DỮ LIỆU MỚI NHẤT, được truy vấn trực tiếp từ cơ sở dữ liệu tại thời điểm hiện tại. " +
+                    "Nếu thông tin sản phẩm (giá, tồn kho, tên, thuộc tính) trong lịch sử hội thoại trước đó khác với dữ liệu bên dưới, hãy LUÔN LUÔN ưu tiên sử dụng dữ liệu bên dưới vì nó chính xác hơn. " +
+                    "Dữ liệu cũ trong lịch sử chat có thể đã lỗi thời do admin đã cập nhật sản phẩm.\n\n" +
                     "Danh sách sản phẩm hiện có tại cửa hàng (giá đã giảm nếu có):\n" + productsText + "\n" +
                     "Danh sách vouchers khuyến mãi hiện có:\n" + vouchersText + "\n\n" +
                     "Hướng dẫn trả lời:\n" +
                     "1. Trả lời bằng tiếng Việt, lịch sự, thân thiện. Xưng hô 'em/dạ' và 'anh/chị/bạn'.\n" +
                     "2. Khi giới thiệu sản phẩm, hãy chèn link sản phẩm theo định dạng chuẩn Markdown: `[Tên sản phẩm](/product/ID)`. Ví dụ: `[Áo Polo Nam](/product/12)`. Rất quan trọng để khách hàng nhấp chuột truy cập trực tiếp.\n" +
                     "3. Trình bày ngắn gọn bằng bullet points, sử dụng icon/emoji sinh động để giao diện chat trực quan hơn.\n" +
-                    "4. Nếu khách hàng muốn gặp nhân viên hỗ trợ, hãy khuyên họ bấm nút 'Gặp nhân viên hỗ trợ' ngay phía trên ô chat để em kết nối trực tiếp.";
+                    "4. Nếu khách hàng muốn gặp nhân viên hỗ trợ, hãy khuyên họ bấm nút 'Gặp nhân viên hỗ trợ' ngay phía trên ô chat để em kết nối trực tiếp.\n" +
+                    "5. Khi trả lời câu hỏi về giá, sắp xếp, so sánh sản phẩm: LUÔN dựa trên dữ liệu sản phẩm ở phần '⚠️ DỮ LIỆU REALTIME' phía trên, KHÔNG dựa trên các câu trả lời trước trong lịch sử hội thoại.";
 
             // 5. Construct request payload for Gemini API
             Map<String, Object> requestBody = new HashMap<>();

@@ -42,6 +42,9 @@ public class VNPayController {
         String orderInfo = request.getOrDefault("orderInfo", "Thanh toan don hang").toString();
         String orderId = request.getOrDefault("orderId", String.valueOf(System.currentTimeMillis())).toString();
 
+        // 1. Kiểm tra tồn kho và giữ chỗ ngay lập tức trước khi chuyển tới VNPAY
+        banHangService.giuTonKhoDatHangOnline(orderId);
+
         // Lấy IP khách hàng
         String ipAddr = httpRequest.getHeader("X-Forwarded-For");
         if (ipAddr == null || ipAddr.isEmpty()) {
@@ -86,16 +89,21 @@ public class VNPayController {
         boolean isSuccess = isValid && "00".equals(responseCode);
 
         // Nếu thanh toán thành công, tiến hành chốt hóa đơn trên DB
-        if (isSuccess && !maHoaDon.isEmpty()) {
+        if (!maHoaDon.isEmpty()) {
             Optional<HoaDon> hoaDonOpt = hoaDonRepository.findByMaHoaDon(maHoaDon);
             if (hoaDonOpt.isPresent()) {
                 HoaDon hoaDon = hoaDonOpt.get();
                 if (hoaDon.getTrangThai() == 0) { // Chỉ chốt nếu hóa đơn đang ở trạng thái chờ thanh toán
-                    ThanhToanRequestDTO payReq = new ThanhToanRequestDTO();
-                    payReq.setTienMat(BigDecimal.ZERO);
-                    payReq.setTienChuyenKhoan(hoaDon.getTongTienThanhToan());
-                    payReq.setGhiChu("Thanh toán online qua VNPAY. Mã GD: " + transactionNo);
-                    banHangService.thanhToanHoaDon(hoaDon.getId(), payReq);
+                    if (isSuccess) {
+                        ThanhToanRequestDTO payReq = new ThanhToanRequestDTO();
+                        payReq.setTienMat(BigDecimal.ZERO);
+                        payReq.setTienChuyenKhoan(hoaDon.getTongTienThanhToan());
+                        payReq.setGhiChu("Thanh toán online qua VNPAY. Mã GD: " + transactionNo);
+                        banHangService.thanhToanHoaDon(hoaDon.getId(), payReq);
+                    } else {
+                        // Thanh toán thất bại hoặc hủy bỏ: hủy hóa đơn và hoàn trả tồn kho
+                        banHangService.huyHoaDonOnlineThatBai(hoaDon.getId(), "Khách hàng hủy thanh toán hoặc giao dịch VNPAY thất bại.");
+                    }
                 }
             }
         }

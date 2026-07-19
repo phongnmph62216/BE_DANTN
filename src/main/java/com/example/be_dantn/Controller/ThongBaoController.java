@@ -45,4 +45,16 @@ public class ThongBaoController {
         thongBaoRepository.saveAll(list);
         return ResponseEntity.ok(new ResponseObject<>("success", "Đánh dấu tất cả đã đọc thành công", null));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ResponseObject<Void>> xoaThongBao(@PathVariable Long id) {
+        thongBaoRepository.deleteById(id);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Xóa thông báo thành công", null));
+    }
+
+    @DeleteMapping("/xoa-tat-ca")
+    public ResponseEntity<ResponseObject<Void>> xoaTatCaThongBao() {
+        thongBaoRepository.deleteAll();
+        return ResponseEntity.ok(new ResponseObject<>("success", "Xóa tất cả thông báo thành công", null));
+    }
 }

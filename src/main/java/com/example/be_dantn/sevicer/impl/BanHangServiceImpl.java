@@ -37,6 +37,7 @@ public class BanHangServiceImpl implements BanHangService {
     @Autowired private HttpServletRequest httpServletRequest;
     @Autowired private EmailService emailService;
     @Autowired private ThongBaoRepository thongBaoRepository;
+    @Autowired private com.example.be_dantn.Handler.ChatWebSocketHandler chatWebSocketHandler;
 
     private NhanVien getLoggedInEmployee() {
         if (httpServletRequest != null) {
@@ -199,7 +200,38 @@ public class BanHangServiceImpl implements BanHangService {
         if (hoaDon.getLoaiHoaDon() == 0) { // Tại quầy
             hoaDon.setTrangThai(4); // Đã hoàn thành
         } else if (hoaDon.getLoaiHoaDon() == 2) { // Bán hàng online
-            hoaDon.setTrangThai(0); // Chưa xác nhận (chờ admin duyệt)
+            ThongBao thongBao = null;
+            if (tienChuyenKhoan.compareTo(BigDecimal.ZERO) > 0) {
+                hoaDon.setTrangThai(1); // Đã xác nhận
+                String currentNotes = hoaDon.getGhiChu();
+                if (currentNotes != null && currentNotes.startsWith("[VNPAY_PENDING]")) {
+                    hoaDon.setGhiChu(currentNotes.substring("[VNPAY_PENDING]".length()));
+                }
+                thongBao = ThongBao.builder()
+                        .tieuDe("Đơn hàng online mới - Đã thanh toán")
+                        .noiDung("Đơn hàng " + hoaDon.getMaHoaDon() + " đã thanh toán qua VNPAY thành công. Khách hàng: " + (hoaDon.getTenKhachHang() != null ? hoaDon.getTenKhachHang() : "Khách vãng lai"))
+                        .maHoaDon(hoaDon.getMaHoaDon())
+                        .idHoaDon(hoaDon.getId())
+                        .trangThai(0)
+                        .build();
+            } else {
+                hoaDon.setTrangThai(0); // Chưa xác nhận (chờ admin duyệt)
+                thongBao = ThongBao.builder()
+                        .tieuDe("Đơn hàng online mới - Chờ xác nhận")
+                        .noiDung("Đơn hàng " + hoaDon.getMaHoaDon() + " đang chờ xác nhận (Thanh toán COD). Khách hàng: " + (hoaDon.getTenKhachHang() != null ? hoaDon.getTenKhachHang() : "Khách vãng lai"))
+                        .maHoaDon(hoaDon.getMaHoaDon())
+                        .idHoaDon(hoaDon.getId())
+                        .trangThai(0)
+                        .build();
+            }
+            if (thongBao != null) {
+                thongBaoRepository.save(thongBao);
+                try {
+                    chatWebSocketHandler.broadcastNotificationToStaff(thongBao);
+                } catch (Exception e) {
+                    // Ignore socket failure
+                }
+            }
         } else { // Giao hàng
             hoaDon.setTrangThai(1); // Đã xác nhận
         }
@@ -451,7 +483,7 @@ public class BanHangServiceImpl implements BanHangService {
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy biến thể sản phẩm với ID: " + idChiTietSanPham));
 
         if (variant.getSoLuongTon() < soLuong) {
-            throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
+            throw new BadRequestException("Thành thật xin lỗi quý khách! Sản phẩm này hiện tại đã hết hàng hoặc không đủ số lượng trong kho (chỉ còn " + variant.getSoLuongTon() + " sản phẩm). Quý khách vui lòng giảm số lượng hoặc chọn sản phẩm khác. Xin chân thành cảm ơn sự thông cảm của quý khách!");
         }
 
         // Bán hàng online: Không trừ tồn kho khi thêm vào giỏ hàng (chỉ validate)
@@ -527,7 +559,7 @@ public class BanHangServiceImpl implements BanHangService {
         if (hoaDon.getLoaiHoaDon() != 2) {
             if (diff > 0) {
                 if (variant.getSoLuongTon() < diff) {
-                    throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
+                    throw new BadRequestException("Thành thật xin lỗi quý khách! Sản phẩm này hiện tại đã hết hàng hoặc không đủ số lượng trong kho (chỉ còn " + variant.getSoLuongTon() + " sản phẩm). Quý khách vui lòng giảm số lượng hoặc chọn sản phẩm khác. Xin chân thành cảm ơn sự thông cảm của quý khách!");
                 }
                 variant.setSoLuongTon(variant.getSoLuongTon() - diff);
             } else if (diff < 0) {
@@ -537,7 +569,7 @@ public class BanHangServiceImpl implements BanHangService {
         } else {
             // Đơn online: chỉ validate tồn kho khi tăng số lượng
             if (diff > 0 && variant.getSoLuongTon() < diff) {
-                throw new BadRequestException("Số lượng tồn kho không đủ (còn lại: " + variant.getSoLuongTon() + ").");
+                throw new BadRequestException("Thành thật xin lỗi quý khách! Sản phẩm này hiện tại đã hết hàng hoặc không đủ số lượng trong kho (chỉ còn " + variant.getSoLuongTon() + " sản phẩm). Quý khách vui lòng giảm số lượng hoặc chọn sản phẩm khác. Xin chân thành cảm ơn sự thông cảm của quý khách!");
             }
         }
 
@@ -743,6 +775,11 @@ public class BanHangServiceImpl implements BanHangService {
                 .trangThai(0) // Chưa đọc
                 .build();
         thongBaoRepository.save(thongBao);
+        try {
+            chatWebSocketHandler.broadcastNotificationToStaff(thongBao);
+        } catch (Exception e) {
+            // Ignore socket failure
+        }
     }
 
     @Override
@@ -828,5 +865,97 @@ public class BanHangServiceImpl implements BanHangService {
                     .build();
             lichSuHoaDonRepository.save(lichSu);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void giuTonKhoDatHangOnline(String maHoaDon) {
+        HoaDon hoaDon = hoaDonRepository.findByMaHoaDon(maHoaDon)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với mã: " + maHoaDon));
+
+        if (hoaDon.getDanhSachChiTiet() == null || hoaDon.getDanhSachChiTiet().isEmpty()) {
+            throw new BadRequestException("Hóa đơn không có sản phẩm nào.");
+        }
+
+        // 1. Kiểm tra số lượng tồn kho
+        for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+            ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+            if (ctsp != null) {
+                int soLuongYeuCau = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                if (soLuongTon < soLuongYeuCau) {
+                    String tenSp = ctsp.getSanPham() != null ? ctsp.getSanPham().getTenSanPham() : "Sản phẩm";
+                    String tenMs = ctsp.getMauSac() != null ? ctsp.getMauSac().getTenMauSac() : "";
+                    String tenKt = ctsp.getKichThuoc() != null ? ctsp.getKichThuoc().getTenKichThuoc() : "";
+                    throw new BadRequestException(String.format("Thành thật xin lỗi quý khách! Sản phẩm \"%s (%s, %s)\" hiện tại đã hết hàng hoặc không đủ số lượng trong kho (chỉ còn %d sản phẩm). Quý khách vui lòng giảm số lượng hoặc chọn sản phẩm khác. Xin chân thành cảm ơn sự thông cảm của quý khách!",
+                            tenSp, tenMs, tenKt, soLuongTon));
+                }
+            }
+        }
+
+        // 2. Trừ tồn kho để giữ chỗ
+        for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+            ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+            if (ctsp != null) {
+                int soLuongYeuCau = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                ctsp.setSoLuongTon(ctsp.getSoLuongTon() - soLuongYeuCau);
+                chiTietSanPhamRepository.save(ctsp);
+            }
+        }
+
+        // 3. Đánh dấu hóa đơn là đang chờ thanh toán VNPAY bằng ghiChu
+        String notes = hoaDon.getGhiChu() != null ? hoaDon.getGhiChu() : "";
+        if (!notes.startsWith("[VNPAY_PENDING]")) {
+            hoaDon.setGhiChu("[VNPAY_PENDING]" + notes);
+            hoaDonRepository.save(hoaDon);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void huyHoaDonOnlineThatBai(Long idHoaDon, String ghiChu) {
+        HoaDon hoaDon = hoaDonRepository.findById(idHoaDon)
+                .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + idHoaDon));
+
+        if (hoaDon.getTrangThai() == 5) {
+            // Đã hủy rồi thì không làm gì
+            return;
+        }
+
+        // 1. Cập nhật trạng thái
+        hoaDon.setTrangThai(5); // Đã hủy
+        hoaDon.setNgaySua(LocalDateTime.now());
+        hoaDon.setNguoiSua("Hệ thống");
+
+        // 2. Xóa prefix [VNPAY_PENDING] khỏi ghiChu nếu có
+        String currentNotes = hoaDon.getGhiChu();
+        if (currentNotes != null && currentNotes.startsWith("[VNPAY_PENDING]")) {
+            hoaDon.setGhiChu(currentNotes.substring("[VNPAY_PENDING]".length()));
+        }
+
+        // 3. Hoàn trả tồn kho
+        if (hoaDon.getDanhSachChiTiet() != null) {
+            for (HoaDonChiTiet chiTiet : hoaDon.getDanhSachChiTiet()) {
+                ChiTietSanPham ctsp = chiTiet.getChiTietSanPham();
+                if (ctsp != null) {
+                    int soLuongBan = chiTiet.getSoLuong() != null ? chiTiet.getSoLuong() : 0;
+                    int soLuongTon = ctsp.getSoLuongTon() != null ? ctsp.getSoLuongTon() : 0;
+                    ctsp.setSoLuongTon(soLuongTon + soLuongBan);
+                    chiTietSanPhamRepository.save(ctsp);
+                }
+            }
+        }
+
+        hoaDonRepository.save(hoaDon);
+
+        // 4. Ghi lịch sử hóa đơn
+        LichSuHoaDon lichSu = LichSuHoaDon.builder()
+                .hoaDon(hoaDon)
+                .nhanVien(null)
+                .trangThai(5)
+                .hanhDong("Hủy đơn hàng do thanh toán online thất bại hoặc hết hạn")
+                .ghiChu(ghiChu)
+                .build();
+        lichSuHoaDonRepository.save(lichSu);
     }
 }

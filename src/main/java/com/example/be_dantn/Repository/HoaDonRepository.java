@@ -91,4 +91,7 @@ public interface HoaDonRepository extends JpaRepository<HoaDon, Long> {
     List<HoaDon> findByTrangThaiAndLoaiHoaDonIn(@Param("trangThai") Integer trangThai, @Param("loaiHoaDons") List<Integer> loaiHoaDons);
 
     List<HoaDon> findByKhachHangIdOrderByNgayTaoDesc(Long khachHangId);
+
+    @Query("SELECT h FROM HoaDon h WHERE h.loaiHoaDon = 2 AND h.trangThai = 0 AND h.ngayTao <= :threshold AND h.ghiChu LIKE '[VNPAY_PENDING]%'")
+    List<HoaDon> findExpiredVnpayOrders(@Param("threshold") LocalDateTime threshold);
 }

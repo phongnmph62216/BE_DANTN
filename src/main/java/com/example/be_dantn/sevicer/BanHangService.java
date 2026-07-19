@@ -20,4 +20,6 @@ public interface BanHangService {
     void xoaVoucher(Long idHoaDon);
     void yeuCauHuyDon(Long orderId, String ghiChu);
     void pheDuyetHuyDon(Long orderId, Boolean dongY, String ghiChu);
+    void giuTonKhoDatHangOnline(String maHoaDon);
+    void huyHoaDonOnlineThatBai(Long idHoaDon, String ghiChu);
 }

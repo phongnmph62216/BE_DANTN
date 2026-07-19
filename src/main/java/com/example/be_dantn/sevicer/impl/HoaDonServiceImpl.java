@@ -191,6 +191,22 @@ public class HoaDonServiceImpl implements HoaDonService {
         Integer trangThaiCu = hoaDon.getTrangThai();
         validateTrangThai(hoaDon.getLoaiHoaDon(), trangThaiCu, trangThaiMoi);
 
+        // --- KIỂM TRA THANH TOÁN CHO ĐƠN TẠI QUẦY/GIAO HÀNG (POS) ---
+        // Đơn tại quầy (0) hoặc giao hàng POS (1): không cho hoàn thành nếu chưa thanh toán đủ
+        if (hoaDon.getLoaiHoaDon() != null && (hoaDon.getLoaiHoaDon() == 0 || hoaDon.getLoaiHoaDon() == 1) && trangThaiMoi == 4) {
+            java.math.BigDecimal tongDaThanhToan = thanhToanRepository.sumSoTienByHoaDonId(hoaDon.getId());
+            java.math.BigDecimal tongCanThanhToan = hoaDon.getTongTienThanhToan() != null ? hoaDon.getTongTienThanhToan() : java.math.BigDecimal.ZERO;
+            if (tongCanThanhToan.compareTo(java.math.BigDecimal.ZERO) > 0 && tongDaThanhToan.compareTo(tongCanThanhToan) < 0) {
+                throw new BadRequestException(String.format(
+                    "Không thể hoàn thành đơn hàng %s. Đơn hàng chưa được thanh toán đủ! " +
+                    "Tổng cần thanh toán: %s đ, đã thanh toán: %s đ. " +
+                    "Vui lòng thực hiện thanh toán tại màn hình Bán hàng (POS) trước.",
+                    hoaDon.getMaHoaDon(),
+                    tongCanThanhToan.toPlainString(),
+                    tongDaThanhToan.toPlainString()));
+            }
+        }
+
         // --- XỬ LÝ QUẢN LÝ TỒN KHO ---
         // 1. Bán hàng Online: Trừ tồn kho khi đơn hàng chuyển từ Chưa xác nhận (0) -> Đã xác nhận (1)
         if (hoaDon.getLoaiHoaDon() != null && hoaDon.getLoaiHoaDon() == 2 && trangThaiCu == 0 && trangThaiMoi == 1) {

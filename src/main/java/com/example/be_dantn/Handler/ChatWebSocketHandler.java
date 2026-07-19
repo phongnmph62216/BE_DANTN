@@ -263,6 +263,13 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    public void broadcastNotificationToStaff(Object notificationData) {
+        broadcastToStaff(Map.of(
+                "type", "NOTIFICATION_ALERT",
+                "data", notificationData
+        ));
+    }
+
     private Map<String, String> parseQueryParams(String query) {
         Map<String, String> params = new ConcurrentHashMap<>();
         if (query == null || query.isEmpty()) return params;
