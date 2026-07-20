@@ -15,6 +15,9 @@ public interface PhieuGiamGiaKhachHangRepository extends JpaRepository<PhieuGiam
     // Lấy danh sách khách hàng đang được áp dụng phiếu này
     List<PhieuGiamGiaKhachHang> findByPhieuGiamGia_Id(Long phieuGiamGiaId);
 
+    // Kiểm tra xem khách hàng có sở hữu phiếu giảm giá cá nhân này không
+    boolean existsByPhieuGiamGia_IdAndKhachHang_Id(Long phieuGiamGiaId, Long khachHangId);
+
     // Xóa tất cả các khách hàng đang được áp dụng phiếu này
     @Modifying
     @Query("DELETE FROM PhieuGiamGiaKhachHang p WHERE p.phieuGiamGia.id = :phieuGiamGiaId")

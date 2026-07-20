@@ -38,6 +38,8 @@ public class BanHangServiceImpl implements BanHangService {
     @Autowired private EmailService emailService;
     @Autowired private ThongBaoRepository thongBaoRepository;
     @Autowired private com.example.be_dantn.Handler.ChatWebSocketHandler chatWebSocketHandler;
+    @Autowired
+    private PhieuGiamGiaKhachHangRepository phieuGiamGiaKhachHangRepository;
 
     private NhanVien getLoggedInEmployee() {
         if (httpServletRequest != null) {
@@ -626,6 +628,17 @@ public class BanHangServiceImpl implements BanHangService {
         }
         if (voucher.getNgayBatDau().isAfter(LocalDateTime.now()) || voucher.getNgayKetThuc().isBefore(LocalDateTime.now())) {
             throw new BadRequestException("Voucher đã hết hạn sử dụng.");
+        }
+
+        // Kiểm tra loại phiếu giảm giá (Cá nhân vs Tất cả)
+        if (voucher.getKieuApDung() != null && voucher.getKieuApDung() == 1) {
+            if (hoaDon.getKhachHang() == null) {
+                throw new BadRequestException("Phiếu giảm giá này dành riêng cho cá nhân. Vui lòng đăng nhập đúng tài khoản được nhận phiếu.");
+            }
+            boolean isAssigned = phieuGiamGiaKhachHangRepository.existsByPhieuGiamGia_IdAndKhachHang_Id(voucher.getId(), hoaDon.getKhachHang().getId());
+            if (!isAssigned) {
+                throw new BadRequestException("Phiếu giảm giá này không thuộc sở hữu của tài khoản bạn.");
+            }
         }
 
         // Kiểm tra điều kiện giảm giá tối thiểu

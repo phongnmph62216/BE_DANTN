@@ -125,12 +125,12 @@ INSERT INTO dot_giam_gia (ma_dot_giam_gia, ten_dot_giam_gia, phan_tram_giam, tra
 -- Seed data for chi_tiet_san_pham
 INSERT INTO chi_tiet_san_pham (ma_chi_tiet_san_pham, id_san_pham, id_mau_sac, id_kich_thuoc, so_luong_ton, gia_nhap, gia_ban, anh, trang_thai, ngay_tao, ngay_sua, id_dot_giam_gia) VALUES
 ('CTSP001', 1, 1, 2, 46, 200000, 350000, '/uploads/d4fd4a55-abcb-4441-81b1-c4159cd5c6e9.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-('CTSP002', 1, 1, 3, 29, 200000, 350000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
-('CTSP003', 1, 2, 2, 60, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
-('CTSP004', 1, 2, 3, 40, 210000, 360000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
-('CTSP005', 2, 4, 1, 98, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
-('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
-('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/a6680008-e37c-4bfd-9117-abb5458941a0.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);
+('CTSP002', 1, 1, 3, 29, 200000, 350000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1),
+('CTSP003', 1, 2, 2, 60, 210000, 360000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+('CTSP004', 1, 2, 3, 40, 210000, 360000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+('CTSP005', 2, 4, 1, 98, 150000, 280000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 2),
+('CTSP006', 2, 4, 2, 120, 150000, 280000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null),
+('CTSP007', 2, 4, 4, 80, 160000, 290000, '/uploads/96975ee4-a146-4e58-b052-53bc2388bf26.png', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, null);
 
 -- Seed data for khach_hang
 INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh, trang_thai, ngay_tao, ngay_sua, ten_tai_khoan, mat_khau) VALUES
