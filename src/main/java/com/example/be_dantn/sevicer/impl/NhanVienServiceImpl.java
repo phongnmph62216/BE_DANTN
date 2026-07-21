@@ -120,6 +120,10 @@ public class NhanVienServiceImpl implements NhanVienService {
         nhanVien.setDiaChi(request.getDiaChi());
         nhanVien.setAnh(request.getAnh());
 
+        if (request.getMatKhau() != null && !request.getMatKhau().trim().isEmpty()) {
+            nhanVien.setMatKhau(passwordEncoder.encode(request.getMatKhau().trim()));
+        }
+
         return nhanVienRepository.save(nhanVien);
     }
 

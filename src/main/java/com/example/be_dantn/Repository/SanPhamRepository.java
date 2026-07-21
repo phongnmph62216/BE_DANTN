@@ -29,7 +29,8 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
                 MAX(ctsp.giaBan),
                 MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN dgg.phanTramGiam ELSE 0 END),
                 MIN(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END),
-                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END)
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END),
+                COALESCE((SELECT SUM(hdct.soLuong) FROM HoaDonChiTiet hdct JOIN hdct.hoaDon hd JOIN hdct.chiTietSanPham c WHERE c.sanPham.id = sp.id AND hd.trangThai = 4), 0L)
             )
             FROM SanPham sp
             LEFT JOIN sp.thuongHieu th
@@ -62,7 +63,8 @@ public interface SanPhamRepository extends JpaRepository<SanPham, Long> {
                 MIN(ctsp.giaBan), MAX(ctsp.giaBan),
                 MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN dgg.phanTramGiam ELSE 0 END),
                 MIN(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END),
-                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END)
+                MAX(CASE WHEN dgg.trangThai = 1 AND CURRENT_TIMESTAMP BETWEEN dgg.ngayBatDau AND dgg.ngayKetThuc THEN (ctsp.giaBan * (100 - dgg.phanTramGiam)) / 100 ELSE ctsp.giaBan END),
+                COALESCE((SELECT SUM(hdct.soLuong) FROM HoaDonChiTiet hdct JOIN hdct.hoaDon hd JOIN hdct.chiTietSanPham c WHERE c.sanPham.id = sp.id AND hd.trangThai = 4), 0L)
             )
             FROM SanPham sp
             LEFT JOIN sp.thuongHieu th

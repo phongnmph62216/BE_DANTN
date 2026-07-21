@@ -21,8 +21,13 @@ public class SanPhamResponse {
     private Integer maxPhanTramGiam;
     private BigDecimal giaThapNhatSauGiam;
     private BigDecimal giaCaoNhatSauGiam;
+    private Long soLuongDaBan;
 
     public SanPhamResponse(Long id, String maSanPham, String tenSanPham, String hinhAnh, Integer trangThai, String tenThuongHieu, String tenChatLieu, Long tongTonKho, BigDecimal giaThapNhat, BigDecimal giaCaoNhat, Integer maxPhanTramGiam, BigDecimal giaThapNhatSauGiam, BigDecimal giaCaoNhatSauGiam) {
+        this(id, maSanPham, tenSanPham, hinhAnh, trangThai, tenThuongHieu, tenChatLieu, tongTonKho, giaThapNhat, giaCaoNhat, maxPhanTramGiam, giaThapNhatSauGiam, giaCaoNhatSauGiam, 0L);
+    }
+
+    public SanPhamResponse(Long id, String maSanPham, String tenSanPham, String hinhAnh, Integer trangThai, String tenThuongHieu, String tenChatLieu, Long tongTonKho, BigDecimal giaThapNhat, BigDecimal giaCaoNhat, Integer maxPhanTramGiam, BigDecimal giaThapNhatSauGiam, BigDecimal giaCaoNhatSauGiam, Long soLuongDaBan) {
         this.id = id;
         this.maSanPham = maSanPham;
         this.tenSanPham = tenSanPham;
@@ -36,5 +41,6 @@ public class SanPhamResponse {
         this.maxPhanTramGiam = maxPhanTramGiam != null ? maxPhanTramGiam : 0;
         this.giaThapNhatSauGiam = giaThapNhatSauGiam != null ? giaThapNhatSauGiam : giaThapNhat;
         this.giaCaoNhatSauGiam = giaCaoNhatSauGiam != null ? giaCaoNhatSauGiam : giaCaoNhat;
+        this.soLuongDaBan = soLuongDaBan != null ? soLuongDaBan : 0L;
     }
 }

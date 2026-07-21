@@ -27,4 +27,5 @@ public class NhanVienUpdateRequest {
     private LocalDate ngaySinh;
     private String diaChi;
     private String anh;
+    private String matKhau;
 }
