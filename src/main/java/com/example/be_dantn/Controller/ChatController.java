@@ -66,4 +66,18 @@ public class ChatController {
             return ResponseEntity.badRequest().body(new ResponseObject<>("error", e.getMessage(), null));
         }
     }
+
+    @GetMapping("/internal/staff")
+    public ResponseEntity<ResponseObject<List<com.example.be_dantn.Entity.NhanVien>>> getInternalStaffList() {
+        List<com.example.be_dantn.Entity.NhanVien> staffList = chatService.getInternalStaffList();
+        return ResponseEntity.ok(new ResponseObject<>("success", "Lấy danh sách nhân viên thành công", staffList));
+    }
+
+    @GetMapping("/internal/session")
+    public ResponseEntity<ResponseObject<ChatSession>> getOrCreateInternalSession(
+            @RequestParam("staff1Id") Long staff1Id,
+            @RequestParam(value = "staff2Id", required = false) Long staff2Id) {
+        ChatSession session = chatService.getOrCreateInternalSession(staff1Id, staff2Id);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Lấy phiên chat nội bộ thành công", session));
+    }
 }

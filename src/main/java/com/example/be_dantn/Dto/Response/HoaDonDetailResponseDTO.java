@@ -24,6 +24,7 @@ public class HoaDonDetailResponseDTO {
     private Integer trangThai;
     private Integer loaiDon;
     private Integer trangThaiYeuCauHuy;
+    private String lyDoHuy;
     private String ghiChu;
 
     // Thông tin khách hàng

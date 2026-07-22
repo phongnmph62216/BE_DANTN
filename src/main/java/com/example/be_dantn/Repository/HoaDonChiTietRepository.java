@@ -34,7 +34,7 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, Lo
     List<HoaDonChiTietDTO> findByIdHoaDon(@Param("idHoaDon") Long idHoaDon);
 
     @Query(value = """
-            SELECT sp.id, sp.ten_san_pham, SUM(hdct.so_luong) AS totalSold
+            SELECT TOP 10 sp.id, sp.ten_san_pham, SUM(hdct.so_luong) AS totalSold
             FROM hoa_don_chi_tiet hdct
             JOIN hoa_don hd ON hdct.id_hoa_don = hd.id
             JOIN chi_tiet_san_pham ctsp ON hdct.id_chi_tiet_san_pham = ctsp.id
@@ -42,7 +42,6 @@ public interface HoaDonChiTietRepository extends JpaRepository<HoaDonChiTiet, Lo
             WHERE hd.trang_thai = 4
             GROUP BY sp.id, sp.ten_san_pham
             ORDER BY SUM(hdct.so_luong) DESC
-            LIMIT 10
             """, nativeQuery = true)
     List<Object[]> findTopSellingProducts();
 }

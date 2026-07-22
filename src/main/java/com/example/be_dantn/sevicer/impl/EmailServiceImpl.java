@@ -337,5 +337,57 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send order success email to {}: {}", toEmail, e.getMessage());
         }
     }
+
+    @Override
+    @Async
+    public void sendResetPasswordOtpEmail(String toEmail, String userName, String otpCode) {
+        if (toEmail == null || toEmail.trim().isEmpty() || !toEmail.contains("@")) {
+            log.warn("Invalid email address: {}. Skipping OTP email delivery.", toEmail);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+            helper.setSubject("[Bee Stylish] Mã Xác Thực Quên Mật Khẩu - " + otpCode);
+
+            String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h2 style="color: #ef972d; margin: 0;">Bee Stylish - Đặt Lại Mật Khẩu</h2>
+                    </div>
+                    
+                    <p style="font-size: 15px; color: #333333;">Xin chào <strong>%s</strong>,</p>
+                    <p style="font-size: 14px; color: #555555; line-height: 1.6;">
+                        Hệ thống Bee Stylish nhận được yêu cầu đặt lại mật khẩu cho tài khoản liên kết với email <strong>%s</strong>.
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0; background-color: #fff8f0; border: 2px dashed #ef972d; padding: 20px; border-radius: 8px;">
+                        <span style="font-size: 13px; color: #777; display: block; margin-bottom: 5px;">MÃ XÁC THỰC OTP CỦA BẠN:</span>
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 6px; color: #ef972d;">%s</span>
+                        <span style="font-size: 12px; color: #d9534f; display: block; margin-top: 5px;">(Mã có hiệu lực trong vòng 10 phút)</span>
+                    </div>
+
+                    <p style="font-size: 13px; color: #666666;">
+                        * Vui lòng không chia sẻ mã OTP này cho bất kỳ ai để bảo vệ an toàn cho tài khoản của bạn.
+                    </p>
+                    
+                    <div style="border-top: 1px solid #eeeeee; margin-top: 25px; padding-top: 15px; text-align: center; font-size: 12px; color: #999999;">
+                        Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email.<br/>
+                        &copy; 2026 Bee Stylish. All rights reserved.
+                    </div>
+                </div>
+                """.formatted(userName != null ? userName : "Quý khách", toEmail, otpCode);
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            log.info("Reset password OTP email sent successfully to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send reset password OTP email to {}: {}", toEmail, e.getMessage());
+        }
+    }
 }
 

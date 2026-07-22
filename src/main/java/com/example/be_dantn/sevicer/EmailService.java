@@ -27,4 +27,9 @@ public interface EmailService {
             String trackingLink
     );
 
+    void sendResetPasswordOtpEmail(
+            String toEmail,
+            String userName,
+            String otpCode
+    );
 }

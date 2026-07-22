@@ -13,8 +13,11 @@ import com.example.be_dantn.Entity.NhanVien;
 import com.example.be_dantn.Entity.ChiTietSanPham;
 import com.example.be_dantn.Entity.HoaDonChiTiet;
 import com.example.be_dantn.exception.BadRequestException;
+import com.example.be_dantn.Entity.ThongBao;
 import com.example.be_dantn.Repository.NhanVienRepository;
 import com.example.be_dantn.Repository.ChiTietSanPhamRepository;
+import com.example.be_dantn.Repository.ThongBaoRepository;
+import com.example.be_dantn.Handler.ChatWebSocketHandler;
 import com.example.be_dantn.sevicer.HoaDonService;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -56,6 +59,12 @@ public class HoaDonServiceImpl implements HoaDonService {
 
     @Autowired
     private ChiTietSanPhamRepository chiTietSanPhamRepository;
+
+    @Autowired
+    private ThongBaoRepository thongBaoRepository;
+
+    @Autowired
+    private ChatWebSocketHandler chatWebSocketHandler;
 
     @Autowired
     private HttpServletRequest httpServletRequest;
@@ -138,6 +147,12 @@ public class HoaDonServiceImpl implements HoaDonService {
             .map(l -> new LichSuHoaDonDTO(l.getTrangThai(), l.getThoiGian(), l.getGhiChu()))
             .collect(Collectors.toList());
 
+        String lyDoHuy = timelineTrangThaiFull.stream()
+            .filter(l -> l.getHanhDong() != null && l.getHanhDong().contains("hủy"))
+            .map(LichSuHoaDonResponseDTO::getGhiChu)
+            .findFirst()
+            .orElse(null);
+
         String nguoiTao = (hoaDon.getNhanVien() != null) ? hoaDon.getNhanVien().getHoVaTen() : "";
         String email = hoaDon.getEmail();
         if (email == null || email.trim().isEmpty()) {
@@ -159,6 +174,7 @@ public class HoaDonServiceImpl implements HoaDonService {
                 .diaChi(diaChi)
                 .loaiDon(hoaDon.getLoaiHoaDon())
                 .trangThaiYeuCauHuy(hoaDon.getTrangThaiYeuCauHuy())
+                .lyDoHuy(lyDoHuy)
                 .ghiChu(hoaDon.getGhiChu())
                 .tongTienHang(hoaDon.getSoTienGoc())
                 .giamGia(hoaDon.getSoTienGiam())
@@ -280,6 +296,22 @@ public class HoaDonServiceImpl implements HoaDonService {
 
         hoaDonRepository.save(hoaDon);
         lichSuHoaDonRepository.save(lichSu);
+
+        // Tạo thông báo cho nhân viên khi trạng thái đơn hàng thay đổi
+        try {
+            String tenNguoiSua = nguoiThucHien != null ? nguoiThucHien.getHoVaTen() : "Hệ thống";
+            ThongBao thongBao = ThongBao.builder()
+                    .tieuDe("Đơn hàng " + hoaDon.getMaHoaDon() + " - " + getTrangThaiText(trangThaiMoi))
+                    .noiDung("Đơn hàng " + hoaDon.getMaHoaDon() + " đã được chuyển từ '" + getTrangThaiText(trangThaiCu) + "' sang '" + getTrangThaiText(trangThaiMoi) + "' (bởi " + tenNguoiSua + ").")
+                    .maHoaDon(hoaDon.getMaHoaDon())
+                    .idHoaDon(hoaDon.getId())
+                    .trangThai(0)
+                    .build();
+            thongBaoRepository.save(thongBao);
+            chatWebSocketHandler.broadcastNotificationToStaff(thongBao);
+        } catch (Exception e) {
+            // Ignore socket failure
+        }
     }
 
     @Override

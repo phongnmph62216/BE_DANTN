@@ -8,8 +8,10 @@ import com.example.be_dantn.Entity.KhachHang;
 import com.example.be_dantn.Entity.NhanVien;
 import com.example.be_dantn.Repository.KhachHangRepository;
 import com.example.be_dantn.Repository.NhanVienRepository;
-import com.example.be_dantn.Config.CodeGenerator;
 import com.example.be_dantn.exception.BadRequestException;
+import com.example.be_dantn.sevicer.AuthService;
+import com.example.be_dantn.Config.CodeGenerator;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +34,9 @@ public class AuthController {
 
     @Autowired
     private CodeGenerator codeGenerator;
+
+    @Autowired
+    private AuthService authService;
 
     @PostMapping("/login")
     public ResponseEntity<ResponseObject<AuthResponseDTO>> login(@RequestBody LoginRequestDTO request) {
@@ -56,7 +61,7 @@ public class AuthController {
                 if (nv.getTrangThai() != null && nv.getTrangThai() == 0) {
                     throw new BadRequestException("Tài khoản nhân viên này đã ngừng hoạt động.");
                 }
-                
+
                 String role = null;
                 if (nv.getVaiTro() != null) {
                     String roleName = nv.getVaiTro().getTen() != null ? nv.getVaiTro().getTen().toLowerCase() : "";
@@ -161,5 +166,37 @@ public class AuthController {
         khachHangRepository.save(kh);
 
         return ResponseEntity.ok(new ResponseObject<>("success", "Đăng ký tài khoản thành công", null));
+    }
+
+    @Data
+    public static class ForgotPasswordRequest {
+        private String emailOrPhone;
+    }
+
+    @Data
+    public static class ResetPasswordRequest {
+        private String emailOrPhone;
+        private String otpCode;
+        private String newPassword;
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ResponseObject<String>> sendForgotPasswordOtp(@RequestBody ForgotPasswordRequest request) {
+        try {
+            authService.sendForgotPasswordOtp(request.getEmailOrPhone());
+            return ResponseEntity.ok(new ResponseObject<>("success", "Mã xác thực OTP đã được gửi đến email liên kết của bạn. Vui lòng kiểm tra hòm thư!", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ResponseObject<>("error", e.getMessage(), null));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ResponseObject<String>> resetPasswordWithOtp(@RequestBody ResetPasswordRequest request) {
+        try {
+            authService.resetPasswordWithOtp(request.getEmailOrPhone(), request.getOtpCode(), request.getNewPassword());
+            return ResponseEntity.ok(new ResponseObject<>("success", "Đặt lại mật khẩu thành công! Bạn có thể đăng nhập bằng mật khẩu mới.", null));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ResponseObject<>("error", e.getMessage(), null));
+        }
     }
 }

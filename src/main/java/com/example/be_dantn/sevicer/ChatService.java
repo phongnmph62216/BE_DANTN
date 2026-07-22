@@ -12,4 +12,6 @@ public interface ChatService {
     void handleDisconnect(String sessionCode);
     List<ChatSession> getSessions(Integer trangThai);
     List<ChatMessage> getMessages(String sessionCode);
+    ChatSession getOrCreateInternalSession(Long staff1Id, Long staff2Id);
+    List<com.example.be_dantn.Entity.NhanVien> getInternalStaffList();
 }

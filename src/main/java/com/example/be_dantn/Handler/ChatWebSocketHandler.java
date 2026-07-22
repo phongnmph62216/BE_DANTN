@@ -266,7 +266,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
     public void broadcastNotificationToStaff(Object notificationData) {
         broadcastToStaff(Map.of(
                 "type", "NOTIFICATION_ALERT",
-                "data", notificationData
+                "timestamp", System.currentTimeMillis()
         ));
     }
 

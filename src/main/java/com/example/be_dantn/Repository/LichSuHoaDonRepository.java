@@ -14,7 +14,7 @@ public interface LichSuHoaDonRepository extends JpaRepository<LichSuHoaDon, Long
 
     @Query("""
             SELECT new com.example.be_dantn.Dto.Response.LichSuHoaDonResponseDTO(
-                CASE WHEN nv IS NOT NULL THEN CONCAT(nv.maNhanVien, ' - ', nv.hoVaTen) ELSE 'Hệ thống' END,
+                CASE WHEN nv IS NOT NULL THEN CONCAT(nv.maNhanVien, ' - ', nv.hoVaTen) WHEN ls.hoaDon.nguoiSua IS NOT NULL THEN ls.hoaDon.nguoiSua ELSE 'Hệ thống' END,
                 ls.hanhDong,
                 ls.trangThai,
                 ls.thoiGian,

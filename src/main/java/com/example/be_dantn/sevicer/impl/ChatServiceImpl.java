@@ -188,4 +188,48 @@ public class ChatServiceImpl implements ChatService {
     public List<ChatMessage> getMessages(String sessionCode) {
         return chatMessageRepository.findAllByChatSessionSessionCodeOrderByNgayTaoAsc(sessionCode);
     }
+
+    @Override
+    @Transactional
+    public ChatSession getOrCreateInternalSession(Long staff1Id, Long staff2Id) {
+        String sessionCode;
+        String visitorName;
+
+        if (staff1Id == null) staff1Id = 1L;
+
+        if (staff2Id == null || staff2Id == 0L || staff1Id.equals(staff2Id)) {
+            sessionCode = "INTERNAL_ROOM_ALL";
+            visitorName = "Kênh chung Nhân viên";
+        } else {
+            long minId = Math.min(staff1Id, staff2Id);
+            long maxId = Math.max(staff1Id, staff2Id);
+            sessionCode = "INTERNAL_DM_" + minId + "_" + maxId;
+
+            NhanVien nv1 = nhanVienRepository.findById(staff1Id).orElse(null);
+            NhanVien nv2 = nhanVienRepository.findById(staff2Id).orElse(null);
+            String name1 = nv1 != null ? nv1.getHoVaTen() : "NV #" + staff1Id;
+            String name2 = nv2 != null ? nv2.getHoVaTen() : "NV #" + staff2Id;
+            visitorName = name1 + " & " + name2;
+        }
+
+        Optional<ChatSession> existing = chatSessionRepository.findBySessionCode(sessionCode);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        ChatSession session = ChatSession.builder()
+                .sessionCode(sessionCode)
+                .visitorName(visitorName)
+                .trangThai(1) // 1: Active
+                .ngayCapNhatCuoi(LocalDateTime.now())
+                .build();
+
+        return chatSessionRepository.save(session);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<NhanVien> getInternalStaffList() {
+        return nhanVienRepository.findAll();
+    }
 }
