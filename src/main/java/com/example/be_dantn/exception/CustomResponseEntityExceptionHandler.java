@@ -18,6 +18,14 @@ import java.util.stream.Collectors;
 
 public class CustomResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
+    @ExceptionHandler(BadRequestException.class)
+    public final ResponseEntity<CustomErrorDetails> handleBadRequestException(BadRequestException ex, WebRequest request) {
+        CustomErrorDetails errorDetails = new CustomErrorDetails(LocalDateTime.now(),
+                ex.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public final ResponseEntity<CustomErrorDetails> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         CustomErrorDetails errorDetails = new CustomErrorDetails(LocalDateTime.now(),
