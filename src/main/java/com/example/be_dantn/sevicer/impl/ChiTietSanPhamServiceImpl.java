@@ -167,6 +167,7 @@ public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
                 entity.getId(),
                 entity.getAnh(),
                 entity.getSanPham() != null ? entity.getSanPham().getMaSanPham() : null,
+                entity.getSanPham() != null ? entity.getSanPham().getTenSanPham() : null,
                 entity.getMaChiTietSanPham(),
                 entity.getKichThuoc() != null ? entity.getKichThuoc().getTenKichThuoc() : null,
                 entity.getMauSac() != null ? entity.getMauSac().getTenMauSac() : null,

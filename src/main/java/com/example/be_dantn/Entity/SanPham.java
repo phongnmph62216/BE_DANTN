@@ -19,7 +19,10 @@ public class SanPham {
 
     private String maSanPham;
     private String tenSanPham;
+
+    @Column(name = "mo_ta", columnDefinition = "NVARCHAR(MAX)")
     private String moTa;
+
     private String hinhAnh;
     private Integer trangThai;
 

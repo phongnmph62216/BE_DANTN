@@ -389,5 +389,132 @@ public class EmailServiceImpl implements EmailService {
             log.error("Failed to send reset password OTP email to {}: {}", toEmail, e.getMessage());
         }
     }
+
+    @Override
+    @Async
+    public void sendRevenueReportEmail(
+            String toEmail,
+            String reportType,
+            BigDecimal doanhThu,
+            Long soDonHang,
+            Long hoanThanh,
+            Long soSanPham,
+            BigDecimal tienMat,
+            BigDecimal chuyenKhoan,
+            BigDecimal vnpay
+    ) {
+        if (toEmail == null || toEmail.trim().isEmpty() || !toEmail.contains("@")) {
+            log.warn("Invalid email address: {}. Skipping revenue report email delivery.", toEmail);
+            return;
+        }
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(senderEmail);
+            helper.setTo(toEmail);
+
+            String titleType = "Hôm Nay";
+            if ("week".equalsIgnoreCase(reportType)) {
+                titleType = "Tuần Này";
+            } else if ("month".equalsIgnoreCase(reportType)) {
+                titleType = "Tháng Này";
+            }
+
+            helper.setSubject("[Bee Stylish] Báo Cáo Doanh Thu Bán Hàng (" + titleType + ")");
+
+            DecimalFormat df = new DecimalFormat("#,###");
+            String dtFormatted = df.format(doanhThu != null ? doanhThu : BigDecimal.ZERO) + " đ";
+            String tmFormatted = df.format(tienMat != null ? tienMat : BigDecimal.ZERO) + " đ";
+            String ckFormatted = df.format(chuyenKhoan != null ? chuyenKhoan : BigDecimal.ZERO) + " đ";
+            String vnFormatted = df.format(vnpay != null ? vnpay : BigDecimal.ZERO) + " đ";
+
+            String htmlContent = """
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 10px; background-color: #ffffff;">
+                    <div style="text-align: center; border-bottom: 2px solid #ef972d; padding-bottom: 15px; margin-bottom: 20px;">
+                        <h2 style="color: #ef972d; margin: 0; font-size: 24px;">BEE STYLISH</h2>
+                        <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Báo Cáo Doanh Thu Dành Cho Quản Lý</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <p style="font-size: 16px; color: #333; line-height: 1.5;">Kính gửi <strong>Quản lý Bee Stylish</strong>,</p>
+                        <p style="font-size: 15px; color: #555; line-height: 1.6;">
+                            Hệ thống quản trị <strong>Bee Stylish</strong> xin gửi báo cáo doanh thu hóa đơn bán hàng thực tế (Kỳ: <strong>%s</strong>):
+                        </p>
+                    </div>
+                    
+                    <div style="background-color: #fffaf0; border: 1px dashed #ef972d; border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">TỔNG DOANH THU THỰC TẾ (HÓA ĐƠN HOÀN THÀNH)</div>
+                        <div style="font-size: 32px; font-weight: bold; color: #ef972d; margin-bottom: 10px;">%s</div>
+                        <div style="font-size: 13px; color: #2e7d32; font-weight: bold; background-color: #e8f5e9; padding: 6px 12px; border-radius: 20px; display: inline-block;">
+                            Khớp 100%% với danh sách hóa đơn hệ thống
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background-color: #fafafa;">
+                        <h3 style="color: #ef972d; margin-top: 0; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">CHI TIẾT KÊNH THANH TOÁN</h3>
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #555; width: 50%%;">💵 Tiền mặt:</td>
+                                <td style="padding: 8px 0; color: #333; font-weight: bold; text-align: right;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #555;">🏦 Chuyển khoản ngân hàng:</td>
+                                <td style="padding: 8px 0; color: #333; font-weight: bold; text-align: right;">%s</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #555;">💳 Ví điện tử VNPAY:</td>
+                                <td style="padding: 8px 0; color: #333; font-weight: bold; text-align: right;">%s</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="margin-bottom: 25px; border: 1px solid #eee; border-radius: 8px; padding: 15px; background-color: #fafafa;">
+                        <h3 style="color: #ef972d; margin-top: 0; margin-bottom: 12px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">THỐNG KÊ ĐƠN HÀNG & SẢN PHẨM</h3>
+                        <table style="width: 100%%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 8px 0; color: #555; width: 60%%;">🧾 Tổng hóa đơn phát sinh:</td>
+                                <td style="padding: 8px 0; color: #333; font-weight: bold; text-align: right;">%d hóa đơn</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #555;">✅ Hóa đơn đã hoàn thành:</td>
+                                <td style="padding: 8px 0; color: #2e7d32; font-weight: bold; text-align: right;">%d hóa đơn</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 8px 0; color: #555;">🛍️ Tổng sản phẩm bán ra:</td>
+                                <td style="padding: 8px 0; color: #333; font-weight: bold; text-align: right;">%d sản phẩm</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <a href="http://localhost:5173/admin/thong-ke" style="background-color: #ef972d; color: #ffffff; text-decoration: none; padding: 12px 30px; font-size: 15px; font-weight: bold; border-radius: 5px; display: inline-block;">Xem báo cáo chi tiết trên Hệ thống</a>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #eeeeee; padding-top: 15px; text-align: center; font-size: 12px; color: #999;">
+                        Báo cáo này được tạo tự động bởi Hệ Thống Quản Lý Bee Stylish.<br/>
+                        &copy; 2026 Bee Stylish. All rights reserved.
+                    </div>
+                </div>
+                """.formatted(
+                    titleType,
+                    dtFormatted,
+                    tmFormatted,
+                    ckFormatted,
+                    vnFormatted,
+                    soDonHang != null ? soDonHang : 0L,
+                    hoanThanh != null ? hoanThanh : 0L,
+                    soSanPham != null ? soSanPham : 0L
+                );
+
+            helper.setText(htmlContent, true);
+            mailSender.send(message);
+            log.info("Revenue report email sent successfully to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send revenue report email to {}: {}", toEmail, e.getMessage());
+        }
+    }
 }
+
 

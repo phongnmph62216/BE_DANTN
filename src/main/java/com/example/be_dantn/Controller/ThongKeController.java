@@ -20,6 +20,9 @@ public class ThongKeController {
     @Autowired
     private ThongKeService thongKeService;
 
+    @Autowired
+    private com.example.be_dantn.sevicer.EmailService emailService;
+
     @GetMapping("/tong-quan")
     public ResponseEntity<ResponseObject<Map<String, Object>>> getTongQuan() {
         Map<String, Object> data = thongKeService.getTongQuan();
@@ -62,5 +65,21 @@ public class ThongKeController {
         }
         Map<String, Object> data = thongKeService.getChiTietThongKe(tuNgay, denNgay, tuGio, denGio);
         return ResponseEntity.ok(new ResponseObject<>("success", "Lấy thống kê chi tiết thành công", data));
+    }
+
+    @PostMapping("/send-email-report")
+    public ResponseEntity<ResponseObject<String>> sendEmailReport(@RequestBody Map<String, Object> req) {
+        String email = (String) req.get("email");
+        String type = (String) req.getOrDefault("type", "today");
+        java.math.BigDecimal doanhThu = req.get("doanhThu") != null ? new java.math.BigDecimal(req.get("doanhThu").toString()) : java.math.BigDecimal.ZERO;
+        Long soDonHang = req.get("soDonHang") != null ? Long.parseLong(req.get("soDonHang").toString()) : 0L;
+        Long hoanThanh = req.get("hoanThanh") != null ? Long.parseLong(req.get("hoanThanh").toString()) : 0L;
+        Long soSanPham = req.get("soSanPham") != null ? Long.parseLong(req.get("soSanPham").toString()) : 0L;
+        java.math.BigDecimal tienMat = req.get("tienMat") != null ? new java.math.BigDecimal(req.get("tienMat").toString()) : java.math.BigDecimal.ZERO;
+        java.math.BigDecimal chuyenKhoan = req.get("chuyenKhoan") != null ? new java.math.BigDecimal(req.get("chuyenKhoan").toString()) : java.math.BigDecimal.ZERO;
+        java.math.BigDecimal vnpay = req.get("vnpay") != null ? new java.math.BigDecimal(req.get("vnpay").toString()) : java.math.BigDecimal.ZERO;
+
+        emailService.sendRevenueReportEmail(email, type, doanhThu, soDonHang, hoanThanh, soSanPham, tienMat, chuyenKhoan, vnpay);
+        return ResponseEntity.ok(new ResponseObject<>("success", "Gửi email báo cáo thành công", "Sent"));
     }
 }

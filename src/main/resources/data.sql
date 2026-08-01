@@ -148,7 +148,7 @@ INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_t
 
 -- Seed data for phieu_giam_gia
 INSERT INTO phieu_giam_gia (ma_phieu_giam_gia, ten_phieu_giam_gia, loai_giam, gia_tri, gia_giam_toi_da, dieu_kien_giam, so_luong, kieu_ap_dung, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_sua) VALUES
-('PGG001', N'Khuyến mãi 10%', 0, 10.00, 50000.00, 200000.00, 100, 0, '2026-06-18 00:00:00', '2026-07-31 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+('PGG001', N'Khuyến mãi 10%', 0, 10.00, 50000.00, 200000.00, 100, 0, '2026-06-18 00:00:00', '2026-08-31 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('PGG002', N'Giảm ngay 20K', 1, 20000.00, NULL, 100000.00, 200, 0, '2026-06-18 00:00:00', '2026-08-15 23:59:59', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('PGG003', N'Black Friday Sale', 0, 50.00, 100000.00, 500000.00, 50, 0, '2023-11-24 00:00:00', '2023-11-26 23:59:59', 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 ('PGG004', N'Tri ân khách hàng thân thiết', 1, 100000.00, NULL, 1000000.00, 4, 1, '2026-06-01 00:00:00', '2026-08-31 23:59:59', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

@@ -32,4 +32,16 @@ public interface EmailService {
             String userName,
             String otpCode
     );
+
+    void sendRevenueReportEmail(
+            String toEmail,
+            String reportType,
+            java.math.BigDecimal doanhThu,
+            Long soDonHang,
+            Long hoanThanh,
+            Long soSanPham,
+            java.math.BigDecimal tienMat,
+            java.math.BigDecimal chuyenKhoan,
+            java.math.BigDecimal vnpay
+    );
 }

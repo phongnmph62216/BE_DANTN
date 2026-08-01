@@ -13,6 +13,7 @@ public class ChiTietSanPhamResponseDTO {
     private Long id;
     private String anh;
     private String maSanPham;
+    private String tenSanPham;
     private String maChiTietSanPham;
     private String tenKichCo;
     private String tenMauSac;

@@ -21,6 +21,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
                 ctsp.id,
                 ctsp.anh,
                 sp.maSanPham,
+                sp.tenSanPham,
                 ctsp.maChiTietSanPham,
                 kt.tenKichThuoc,
                 ms.tenMauSac,
@@ -39,7 +40,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             JOIN ctsp.kichThuoc kt
             LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
-                (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword%)
+                (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword% OR sp.tenSanPham LIKE %:keyword%)
             AND (:idMauSac IS NULL OR ms.id = :idMauSac)
             AND (:idKichThuoc IS NULL OR kt.id = :idKichThuoc)
             AND (:trangThai IS NULL OR ctsp.trangThai = :trangThai)
@@ -64,6 +65,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
                 ctsp.id,
                 ctsp.anh,
                 sp.maSanPham,
+                sp.tenSanPham,
                 ctsp.maChiTietSanPham,
                 kt.tenKichThuoc,
                 ms.tenMauSac,
@@ -82,7 +84,7 @@ public interface ChiTietSanPhamRepository extends JpaRepository<ChiTietSanPham, 
             JOIN ctsp.kichThuoc kt
             LEFT JOIN ctsp.dotGiamGia dgg
             WHERE
-                (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword%)
+                (:keyword IS NULL OR ctsp.maChiTietSanPham LIKE %:keyword% OR sp.maSanPham LIKE %:keyword% OR sp.tenSanPham LIKE %:keyword%)
             AND (:idMauSac IS NULL OR ms.id = :idMauSac)
             AND (:idKichThuoc IS NULL OR kt.id = :idKichThuoc)
             AND (:trangThai IS NULL OR ctsp.trangThai = :trangThai)
