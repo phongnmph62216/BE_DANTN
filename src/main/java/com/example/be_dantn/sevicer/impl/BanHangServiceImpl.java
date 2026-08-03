@@ -760,8 +760,8 @@ public class BanHangServiceImpl implements BanHangService {
         HoaDon hoaDon = hoaDonRepository.findById(orderId)
                 .orElseThrow(() -> new BadRequestException("Không tìm thấy hóa đơn với ID: " + orderId));
 
-        if (hoaDon.getTrangThai() != 0 && hoaDon.getTrangThai() != 1) {
-            throw new BadRequestException("Chỉ có thể yêu cầu hủy đơn khi đơn hàng đang ở trạng thái Chờ xác nhận hoặc Đã xác nhận.");
+        if (hoaDon.getTrangThai() != 0 && hoaDon.getTrangThai() != 1 && hoaDon.getTrangThai() != 2) {
+            throw new BadRequestException("Chỉ có thể yêu cầu hủy đơn khi đơn hàng đang ở trạng thái Chờ xác nhận, Đã xác nhận hoặc Chờ giao.");
         }
 
         hoaDon.setTrangThaiYeuCauHuy(1); // 1: Chờ xác nhận hủy

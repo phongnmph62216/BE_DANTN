@@ -325,6 +325,10 @@ public class HoaDonServiceImpl implements HoaDonService {
                 throw new BadRequestException("Đơn tại quầy chỉ có thể chuyển từ 'Chưa xác nhận' sang 'Đã hoàn thành' hoặc 'Đã hủy'.");
             }
         } else { // Online
+            if (trangThaiMoi == 5 && (trangThaiCu != 0 && trangThaiCu != 1 && trangThaiCu != 2)) {
+                 throw new BadRequestException("Không thể hủy đơn hàng khi đơn hàng đang trong quá trình giao hoặc đã hoàn thành.");
+            }
+
             Map<Integer, Integer> nextStateMap = Map.of(
                 0, 1, // Chưa xác nhận -> Đã xác nhận
                 1, 2, // Đã xác nhận -> Chờ giao
@@ -333,7 +337,7 @@ public class HoaDonServiceImpl implements HoaDonService {
             );
             
             Integer expectedNextState = nextStateMap.get(trangThaiCu);
-            if (trangThaiMoi != 5 && trangThaiMoi != 6 && (expectedNextState == null || !expectedNextState.equals(trangThaiMoi))) { // Cho phép hủy từ mọi trạng thái, thất bại từ Đang giao
+            if (trangThaiMoi != 5 && trangThaiMoi != 6 && (expectedNextState == null || !expectedNextState.equals(trangThaiMoi))) {
                  throw new BadRequestException(String.format("Không thể chuyển trạng thái từ '%s' sang '%s'.", getTrangThaiText(trangThaiCu), getTrangThaiText(trangThaiMoi)));
             }
             if (trangThaiMoi == 6 && trangThaiCu != 3) {
