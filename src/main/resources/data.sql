@@ -141,10 +141,10 @@ INSERT INTO khach_hang (ma_khach_hang, ho_ten, sdt, email, gioi_tinh, ngay_sinh,
 
 -- Seed data for dia_chi
 INSERT INTO dia_chi (id_khach_hang, ten_nguoi_nhan, sdt_nguoi_nhan, dia_chi_cu_the, tinh_thanh_pho, quan_huyen, phuong_xa, kieu_dia_chi_la_mac_dinh, ngay_tao, ngay_sua) VALUES
-(1, N'Nguyễn Văn An', '0987654321', N'Số 123, Đường Giải Phóng', N'Hà Nội', N'Hai Bà Trưng', N'Phường Đồng Tâm', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(1, N'Nguyễn Văn An', '0987654321', N'Tầng 10, Tòa nhà Keangnam', N'Hà Nội', N'Nam Từ Liêm', N'Phường Mễ Trì', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, N'Trần Thị Bình', '0912345678', N'456 Lê Lợi, Phường Bến Nghé', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Bến Nghé', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, N'Phạm Thị Dung', '0777888999', N'Ký túc xá khu B, Đại học Quốc gia', N'TP. Hồ Chí Minh', N'Thủ Đức', N'Phường Linh Trung', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+(1, N'Nguyễn Văn Dũng', '0987657321', N'Số 123, Đường Giải Phóng', N'Hà Nội', N'Hai Bà Trưng', N'Phường Đồng Tâm', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(1, N'Nguyễn Văn Dũng', '0987657321', N'Tầng 10, Tòa nhà Keangnam', N'Hà Nội', N'Nam Từ Liêm', N'Phường Mễ Trì', 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, N'Trần Thị Bình', '0912345778', N'456 Lê Lợi, Phường Bến Nghé', N'TP. Hồ Chí Minh', N'Quận 1', N'Phường Bến Nghé', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, N'Phạm Thị Dung', '0777878999', N'Ký túc xá khu B, Đại học Quốc gia', N'TP. Hồ Chí Minh', N'Thủ Đức', N'Phường Linh Trung', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Seed data for phieu_giam_gia
 INSERT INTO phieu_giam_gia (ma_phieu_giam_gia, ten_phieu_giam_gia, loai_giam, gia_tri, gia_giam_toi_da, dieu_kien_giam, so_luong, kieu_ap_dung, ngay_bat_dau, ngay_ket_thuc, trang_thai, ngay_tao, ngay_sua) VALUES
