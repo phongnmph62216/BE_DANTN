@@ -1,18 +1,33 @@
 services:
   mysql:
-    image: 'mysql:latest'
+    image: 'mysql:8.0' # Chọn đúng version bạn đang dùng để dev
+    restart: unless-stopped
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_USER=${MYSQL_USER}
     ports:
-      - '3306'
+      # Cấu trúc: IP_Host:Port_Host:Port_Container
+      # Chỉ cho phép truy cập DB từ chính máy server đó qua localhost
+      - '127.0.0.1:3306:3306'
+    volumes:
+      # Gắn dữ liệu ra ngoài máy host để không bị mất
+      - mysql_data:/var/lib/mysql
+
   sqlserver:
-    image: 'mcr.microsoft.com/mssql/server:latest'
+    image: 'mcr.microsoft.com/mssql/server:2022-latest' # Chọn version cụ thể
+    restart: unless-stopped
     environment:
-      - 'ACCEPT_EULA=yes'
-      - 'MSSQL_PID=express'
-      - 'MSSQL_SA_PASSWORD=verYs3cret'
+      - ACCEPT_EULA=yes
+      - MSSQL_PID=express
+      - MSSQL_SA_PASSWORD=${MSSQL_SA_PASSWORD}
     ports:
-      - '1433'
+      - '127.0.0.1:1433:1433'
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+
+# Khai báo volumes
+volumes:
+  mysql_data:
+  sqlserver_data:
