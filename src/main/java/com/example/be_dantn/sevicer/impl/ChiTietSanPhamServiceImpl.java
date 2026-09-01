@@ -27,7 +27,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
+public class   ChiTietSanPhamServiceImpl implements ChiTietSanPhamService {
 
     private final ChiTietSanPhamRepository chiTietSanPhamRepository;
     private final SanPhamRepository sanPhamRepository;
